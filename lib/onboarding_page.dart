@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({Key? key}) : super(key: key);
@@ -49,7 +50,7 @@ class OnboardingPage extends StatelessWidget {
               ), // Add padding at the bottom
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Navigate to the next screen
+                  context.go('/login');
                 },
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets

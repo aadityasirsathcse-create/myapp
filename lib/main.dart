@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:myapp/onboarding_page.dart';
+import 'package:myapp/login_page.dart';
 
 final _router = GoRouter(
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const OnboardingPage(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const OnboardingPage()),
+    GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
   ],
 );
 
@@ -21,16 +20,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
+      // TRY THIS: Try running your application with "flutter run". You'll see
+      // the application has a purple toolbar. Then, without quitting the app,
+      // try changing the seedColor in the colorScheme below to Colors.green
+      // and then invoke "hot reload" (save your changes or press the "hot
+      // reload" button in a Flutter-supported IDE, or press "r" if you used
+      // the command line to start the app).
+      //
+      // Notice that the counter didn't reset back to zero; the application
+      // state is not lost during the reload. To reset the state, use hot
+      // restart instead.
+      // restart instead.
       routerConfig: _router,
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
@@ -90,7 +90,6 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
-        
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
