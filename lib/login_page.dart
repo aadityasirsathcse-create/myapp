@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart'; // Assuming you want to use go_router for navigation
 
+import 'package:myapp/home_page.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -28,6 +29,10 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         // Check if the widget is still in the widget tree
         context.go('/'); // Replace '/' with your desired route after login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       }
     } on FirebaseAuthException catch (e) {
       // Handle different authentication errors

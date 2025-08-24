@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:myapp/home_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -35,7 +36,10 @@ class _SignUpPageState extends State<SignUpPage> {
         // Check if the widget is still in the widget tree
         // You might want to navigate to a profile setup page or directly to the home screen
         context.go('/'); // Replace '/' with your desired route after signup
+ Navigator.pushReplacement(
+ context, MaterialPageRoute(builder: (context) => const HomePage()));
       }
+
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       if (e.code == 'weak-password') {
