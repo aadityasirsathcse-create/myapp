@@ -1,40 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:go_router/go_router.dart'; // Assuming you want to use go_router for navigation
+import 'package:go_router/go_router.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({Key? key}) : super(key: key);
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<SignUpPage> createState() => _SignUpPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignUpPageState extends State<SignUpPage> {
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  Future<void> _signIn() async {
+  Future<void> _signUp() async {
     setState(() {
       _isLoading = true;
     });
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      // Navigate to the next screen upon successful login
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
+
+      // Optional: Update user profile with username
+      await userCredential.user?.updateDisplayName(_usernameController.text);
+
+      // Navigate to the next screen upon successful registration
       if (mounted) {
         // Check if the widget is still in the widget tree
-        context.go('/'); // Replace '/' with your desired route after login
+        // You might want to navigate to a profile setup page or directly to the home screen
+        context.go('/'); // Replace '/' with your desired route after signup
       }
     } on FirebaseAuthException catch (e) {
-      // Handle different authentication errors
       String errorMessage;
-      if (e.code == 'user-not-found') {
-        errorMessage = 'No user found for that email.';
-      } else if (e.code == 'wrong-password') {
-        errorMessage = 'Wrong password provided for that user.';
+      if (e.code == 'weak-password') {
+        errorMessage = 'The password provided is too weak.';
+      } else if (e.code == 'email-already-in-use') {
+        errorMessage = 'The account already exists for that email.';
       } else {
         errorMessage = 'Error: ${e.message}';
       }
@@ -44,7 +50,6 @@ class _LoginPageState extends State<LoginPage> {
         ).showSnackBar(SnackBar(content: Text(errorMessage)));
       }
     } catch (e) {
-      // Handle other potential errors
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred: ${e.toString()}')),
@@ -61,6 +66,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -79,12 +85,13 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 80), // Adjust spacing as needed
               Center(
                 child: Image.asset(
-                  'assets/images/logo.png', // Replace with your logo asset path
+                  'assets/images/logo.png', // Placeholder for your logo asset path
                   height: 60, // Adjust height as needed
                   width: 60,
                 ),
               ),
               const SizedBox(height: 40), // Adjust spacing as needed
+              // Placeholder for Login/Sign Up tabs
               Row(
                 children: [
                   Expanded(
@@ -92,6 +99,24 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         Text(
                           'Login',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600], // Inactive tab color
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          height: 3,
+                          color: Colors.transparent, // Inactive tab indicator
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          'Sign Up',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -106,40 +131,35 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: InkWell(
-                      // Wrap the column with InkWell
-                      onTap: () {
-                        context.go('/signup'); // Navigate to the signup page
-                      },
-                      child: Column(
-                        children: [
-                          Text(
-                            'Sign Up',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600], // Inactive tab color
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            height: 3,
-                            color: Colors.transparent,
-                          ), // Inactive tab indicator
-                        ],
-                      ),
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 40), // Adjust spacing as needed
               const Text(
-                'Login to your account',
+                'Manual Sign Up',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20), // Adjust spacing as needed
+              // Placeholder for Username TextField
               TextField(
-                controller: _emailController, // Assigned the controller here
+                controller: _usernameController,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20), // Adjust spacing as needed
+              // Placeholder for Email TextField
+              TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email ID',
                   border: OutlineInputBorder(
@@ -155,9 +175,10 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20), // Adjust spacing as needed
+              // Placeholder for Password TextField
               TextField(
-                controller: _passwordController, // Assigned the controller here
                 obscureText: true,
+                controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(
@@ -176,18 +197,14 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 40), // Adjust spacing as needed
               Center(
                 child: ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : _signIn, // Disable button when loading
+                  onPressed: _isLoading ? null : _signUp,
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets
-                        .zero, // Set padding to zero as the gradient will provide it
+                    padding: EdgeInsets.zero,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    backgroundColor: Colors
-                        .transparent, // Make button transparent to show gradient
-                    shadowColor: Colors.transparent, // Remove shadow
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
                   ),
                   child: Ink(
                     decoration: BoxDecoration(
@@ -210,9 +227,9 @@ class _LoginPageState extends State<LoginPage> {
                                 color: Colors.white,
                                 strokeWidth: 2,
                               ),
-                            ) // Loading indicator
+                            )
                           : const Text(
-                              'Login',
+                              'Sign Up',
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.white,
