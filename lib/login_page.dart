@@ -1,7 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart'; // Assuming you want to use go_router for navigation
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _signIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      // Navigate to the next screen upon successful login
+      if (mounted) {
+        // Check if the widget is still in the widget tree
+        context.go('/'); // Replace '/' with your desired route after login
+      }
+    } on FirebaseAuthException catch (e) {
+      // Handle different authentication errors
+      String errorMessage;
+      if (e.code == 'user-not-found') {
+        errorMessage = 'No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Wrong password provided for that user.';
+      } else {
+        errorMessage = 'Error: ${e.message}';
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      }
+    } catch (e) {
+      // Handle other potential errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +133,7 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 20), // Adjust spacing as needed
               TextField(
+                controller: _emailController, // Assigned the controller here
                 decoration: InputDecoration(
                   labelText: 'Email ID',
                   border: OutlineInputBorder(
@@ -86,6 +150,7 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 20), // Adjust spacing as needed
               TextField(
+                controller: _passwordController, // Assigned the controller here
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
@@ -105,9 +170,9 @@ class LoginPage extends StatelessWidget {
               const SizedBox(height: 40), // Adjust spacing as needed
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement login logic
-                  },
+                  onPressed: _isLoading
+                      ? null
+                      : _signIn, // Disable button when loading
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets
                         .zero, // Set padding to zero as the gradient will provide it
@@ -130,11 +195,23 @@ class LoginPage extends StatelessWidget {
                     child: Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      width: double.infinity, // Make button take full width
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                      width: double.infinity,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ) // Loading indicator
+                          : const Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                 ),
