@@ -185,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 40), // Adjust spacing as needed
+              const SizedBox(height: 120), // Adjust spacing as needed
               Center(
                 child: ElevatedButton(
                   onPressed: _isLoading
@@ -208,12 +208,13 @@ class _LoginPageState extends State<LoginPage> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(13),
                     ),
                     child: Container(
                       alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 120, vertical: 13,),
                       width: double.infinity,
+                      
                       child: _isLoading
                           ? const SizedBox(
                               height: 24,
