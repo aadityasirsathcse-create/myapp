@@ -28,7 +28,7 @@ android {
         // You can update the following values to match your application needs.
         // The following values configure the Android build for your application.
         // For more information, see https://docs.flutter.dev/deployment/android#minimal-setup.
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
