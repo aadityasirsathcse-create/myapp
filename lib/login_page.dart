@@ -13,6 +13,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
 
   Future<void> _signIn() async {
     setState(() {
@@ -157,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20), // Adjust spacing as needed
               TextField(
                 controller: _passwordController, // Assigned the controller here
-                obscureText: true,
+                obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(
@@ -170,7 +171,18 @@ class _LoginPageState extends State<LoginPage> {
                     horizontal: 16,
                     vertical: 16,
                   ),
-                  suffixIcon: Icon(Icons.visibility_off_outlined),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 40), // Adjust spacing as needed

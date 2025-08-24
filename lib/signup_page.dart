@@ -13,6 +13,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
   bool _isLoading = false;
 
   Future<void> _signUp() async {
@@ -97,15 +98,24 @@ class _SignUpPageState extends State<SignUpPage> {
                   Expanded(
                     child: Column(
                       children: [
-                        Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[600], // Inactive tab color
+                        GestureDetector(
+                          onTap: () {
+                            // Navigate to the login page
+                            context.go(
+                              '/login',
+                            ); // Replace '/login' with your login route
+                          },
+                          child: Text(
+                            'Login',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600], // Inactive tab color
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Container(
+                          // Adjust height as needed
                           height: 3,
                           color: Colors.transparent, // Inactive tab indicator
                         ),
@@ -177,7 +187,7 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: 20), // Adjust spacing as needed
               // Placeholder for Password TextField
               TextField(
-                obscureText: true,
+                obscureText: !_isPasswordVisible,
                 controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: 'Password',
@@ -191,7 +201,18 @@ class _SignUpPageState extends State<SignUpPage> {
                     horizontal: 16,
                     vertical: 16,
                   ),
-                  suffixIcon: Icon(Icons.visibility_off_outlined),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 40), // Adjust spacing as needed
