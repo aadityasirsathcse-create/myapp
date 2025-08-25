@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:myapp/home_page.dart';
 import 'package:myapp/onboarding_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:myapp/signup_page.dart';
@@ -11,6 +12,7 @@ final _router = GoRouter(
     GoRoute(path: '/', builder: (context, state) => const OnboardingPage()),
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     GoRoute(path: '/signup', builder: (context, state) => const SignUpPage()),
+    GoRoute(path: '/home', builder: (context, state) => const HomePage()),
   ],
 );
 

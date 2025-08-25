@@ -28,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
       // Navigate to the next screen upon successful login
       if (mounted) {
         // Check if the widget is still in the widget tree
-        context.go('/'); // Replace '/' with your desired route after login
+        context.go('/home'); // Replace '/' with your desired route after login
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),

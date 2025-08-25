@@ -35,7 +35,7 @@ class _SignUpPageState extends State<SignUpPage> {
       if (mounted) {
         // Check if the widget is still in the widget tree
         // You might want to navigate to a profile setup page or directly to the home screen
-        context.go('/'); // Replace '/' with your desired route after signup
+        context.go('/home');
  Navigator.pushReplacement(
  context, MaterialPageRoute(builder: (context) => const HomePage()));
       }
