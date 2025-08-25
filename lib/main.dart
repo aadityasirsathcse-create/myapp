@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:myapp/signup_page.dart';
 import 'package:myapp/login_page.dart';
 import 'firebase_options.dart';
+import 'package:myapp/product_detail_page.dart';
 
 final _router = GoRouter(
   routes: [
@@ -13,6 +14,7 @@ final _router = GoRouter(
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     GoRoute(path: '/signup', builder: (context, state) => const SignUpPage()),
     GoRoute(path: '/home', builder: (context, state) => const HomePage()),
+    GoRoute(path: '/productDetail', builder: (context, state) => ProductDetailPage(product: state.extra as Map<String, dynamic>)),
   ],
 );
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SearchPage extends StatefulWidget {
   final List<Map<String, dynamic>> products;
@@ -134,7 +135,7 @@ class _SearchPageState extends State<SearchPage> {
                               title: Text(product['name']),
                               subtitle: Text("\$${product['price']}"),
                               onTap: () {
-                                // Handle product click
+                                context.go('/productDetail', extra: product);
                               },
                             ),
                           );
