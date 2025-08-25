@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final Map<String, dynamic> product;
@@ -9,39 +10,29 @@ class ProductDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(product['name'] ?? 'Product Details'),
+        title: Text(product['name']),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () {
+            },
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (product['image'] != null)
-              Center(
-                child: Image.network(
-                  product['image'],
-                  height: 250,
-                  fit: BoxFit.contain,
-                ),
-              ),
+            const Icon(Icons.shopping_bag, size: 100),
             const SizedBox(height: 20),
             Text(
-              product['name'] ?? 'No name available',
-              style: Theme.of(context).textTheme.headlineMedium,
+              product['name'],
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
             Text(
-              '\$${product['price']?.toStringAsFixed(2) ?? 'N/A'}',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.green[700],
-                  ),
+              "\$${product['price']}",
+              style: const TextStyle(fontSize: 18),
             ),
-            const SizedBox(height: 20),
-            Text(
-              product['description'] ?? 'No description available.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            // You can add more product details here as needed
           ],
         ),
       ),

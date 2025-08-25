@@ -25,12 +25,10 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.myapp"
-        // You can update the following values to match your application needs.
-        // The following values configure the Android build for your application.
-        // For more information, see https://docs.flutter.dev/deployment/android#minimal-setup.
-        minSdk = 23
+        // Kotlin DSL style assignments:
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
+        versionCode = flutter.versionCode.toInt()
         versionName = flutter.versionName
     }
 

@@ -14,143 +14,142 @@ class HomePage extends StatelessWidget {
   ];
 
   final List<Map<String, dynamic>> products = const [
-  { 
+  {
     "name": "Wireless Headphones",
-    "price": "\$59.99",
+    "price": 59.99, 
     "image": "https://images.pexels.com/photos/3394667/pexels-photo-3394667.jpeg",
     "flashSale": true,
     "discount": false
   },
   {
     "name": "Smart Watch",
-    "price": "\$129.99",
+    "price": 129.99,
     "image": "https://images.pexels.com/photos/277394/pexels-photo-277394.jpeg",
     "flashSale": false,
     "discount": true
   },
   {
     "name": "Running Shoes",
-    "price": "\$89.99",
+    "price": 89.99,
     "image": "https://images.pexels.com/photos/19090/pexels-photo.jpg",
     "flashSale": false,
     "discount": false
   },
   {
     "name": "Leather Backpack",
-    "price": "\$74.99",
+    "price": 74.99,
     "image": "https://images.pexels.com/photos/322207/pexels-photo-322207.jpeg",
     "flashSale": true,
     "discount": false
   },
   {
     "name": "Casual Sunglasses",
-    "price": "\$25.99",
+    "price": 25.99,
     "image": "https://images.pexels.com/photos/46710/pexels-photo-46710.jpeg",
     "flashSale": false,
     "discount": true
   },
   {
     "name": "Gaming Laptop",
-    "price": "\$999.99",
+    "price": 999.99,
     "image": "https://images.pexels.com/photos/18105/pexels-photo.jpg",
     "flashSale": false,
     "discount": false
   },
   {
     "name": "Bluetooth Speaker",
-    "price": "\$39.99",
+    "price": 39.99,
     "image": "https://images.pexels.com/photos/374870/pexels-photo-374870.jpeg",
     "flashSale": true,
     "discount": true
   },
   {
     "name": "DSLR Camera",
-    "price": "\$549.99",
+    "price": 549.99,
     "image": "https://images.pexels.com/photos/51383/camera-slr-digital-photography-51383.jpeg",
     "flashSale": false,
     "discount": true
   },
   {
     "name": "Office Chair",
-    "price": "\$199.99",
+    "price": 199.99,
     "image": "https://images.pexels.com/photos/696407/pexels-photo-696407.jpeg",
     "flashSale": true,
     "discount": false
   },
   {
     "name": "Fitness Dumbbells",
-    "price": "\$45.99",
+    "price": 45.99,
     "image": "https://images.pexels.com/photos/1552249/pexels-photo-1552249.jpeg",
     "flashSale": false,
     "discount": true
   },
   {
     "name": "Electric Guitar",
-    "price": "\$349.99",
+    "price": 349.99,
     "image": "https://images.pexels.com/photos/164936/pexels-photo-164936.jpeg",
     "flashSale": true,
     "discount": false
   },
   {
     "name": "Coffee Maker",
-    "price": "\$89.99",
+    "price": 89.99,
     "image": "https://images.pexels.com/photos/585750/pexels-photo-585750.jpeg",
     "flashSale": false,
     "discount": true
   },
   {
     "name": "Mountain Bike",
-    "price": "\$499.99",
+    "price": 499.99,
     "image": "https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg",
     "flashSale": true,
     "discount": false
   },
   {
     "name": "Smartphone",
-    "price": "\$699.99",
+    "price": 699.99,
     "image": "https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg",
     "flashSale": false,
     "discount": true
   },
   {
     "name": "Wireless Keyboard",
-    "price": "\$49.99",
+    "price": 49.99,
     "image": "https://images.pexels.com/photos/205421/pexels-photo-205421.jpeg",
     "flashSale": true,
     "discount": false
   },
-  // 🔥 New Items Added
   {
     "name": "Portable Power Bank",
-    "price": "\$29.99",
+    "price": 29.99,
     "image": "https://images.pexels.com/photos/4042800/pexels-photo-4042800.jpeg",
     "flashSale": true,
     "discount": true
   },
   {
     "name": "4K Smart TV",
-    "price": "\$899.99",
+    "price": 899.99,
     "image": "https://images.pexels.com/photos/5721902/pexels-photo-5721902.jpeg",
     "flashSale": false,
     "discount": true
   },
   {
     "name": "Noise Cancelling Earbuds",
-    "price": "\$79.99",
+    "price": 79.99,
     "image": "https://images.pexels.com/photos/3394658/pexels-photo-3394658.jpeg",
     "flashSale": true,
     "discount": false
   },
   {
     "name": "Drone Camera",
-    "price": "\$649.99",
+    "price": 649.99,
     "image": "https://images.pexels.com/photos/442587/pexels-photo-442587.jpeg",
     "flashSale": true,
     "discount": true
   },
   {
     "name": "Digital Alarm Clock",
-    "price": "\$19.99",
+    "price": 19.99,
     "image": "https://images.pexels.com/photos/4045655/pexels-photo-4045655.jpeg",
     "flashSale": false,
     "discount": false
@@ -167,7 +166,7 @@ class HomePage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.shopping_cart),
             onPressed: () {
-              // Handle shopping cart
+
             },
           ),
         ],
@@ -245,7 +244,7 @@ class HomePage extends StatelessWidget {
                   final product = products[index];
                   return ProductCard(
                     productName: product["name"],
-                    productPrice: product["price"],
+                    productPrice: product["price"], // now num
                     imageUrl: product["image"],
                     isFlashSale: product["flashSale"],
                     hasDiscount: product["discount"],
@@ -265,7 +264,7 @@ class HomePage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => SearchPage(products: products), 
+                builder: (context) => SearchPage(products: products),
               ),
             );
           },
@@ -288,7 +287,7 @@ class HomePage extends StatelessWidget {
 /// Product Card
 class ProductCard extends StatelessWidget {
   final String productName;
-  final String productPrice;
+  final num productPrice; // changed from String → num
   final String imageUrl;
   final bool isFlashSale;
   final bool hasDiscount;
@@ -381,7 +380,7 @@ class ProductCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4.0),
                 Text(
-                  productPrice,
+                  "\$${productPrice.toStringAsFixed(2)}", // formatted properly
                   style: TextStyle(fontSize: 12.0, color: Colors.grey[700]),
                 ),
               ],
