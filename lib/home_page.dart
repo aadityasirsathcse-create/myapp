@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart'; // Corrected import path
+import 'package:myapp/search_page.dart'; // Import the SearchPage
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -10,12 +11,6 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('My Shopping App'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Handle search
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.shopping_cart),
             onPressed: () {
@@ -67,92 +62,135 @@ class HomePage extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        // Removed Stack and Positioned for persistent FloatingActionButton
+        child: Stack(
           children: [
-            // Promotional Carousel
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: CarouselSlider(
-                options: CarouselOptions(
-                  height: 180.0,
-                  autoPlay: true, // Corrected autoPlay casing
-                  enlargeCenterPage: true,
-                  aspectRatio: 16 / 9,
-                  autoPlayCurve:
-                      Curves.fastOutSlowIn, // Corrected autoPlayCurve casing
-                  enableInfiniteScroll: true,
-                  autoPlayAnimationDuration: const Duration(
-                    milliseconds: 800,
-                  ), // Corrected autoPlayAnimationDuration casing
-                  viewportFraction: 0.8,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Promotional Carousel
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: CarouselSlider(
+                    options: CarouselOptions(
+                      height: 180.0,
+                      autoPlay: true, // Corrected autoPlay casing
+                      enlargeCenterPage: true,
+                      aspectRatio: 16 / 9,
+                      autoPlayCurve: Curves
+                          .fastOutSlowIn, // Corrected autoPlayCurve casing
+                      enableInfiniteScroll: true,
+                      autoPlayAnimationDuration: const Duration(
+                        milliseconds: 800,
+                      ), // Corrected autoPlayAnimationDuration casing
+                      viewportFraction: 0.8,
+                    ),
+                    items: [1, 2, 3, 4, 5].map((i) {
+                      return Builder(
+                        builder: (BuildContext context) {
+                          return Container(
+                            width: MediaQuery.of(
+                              context,
+                            ).size.width, // Corrected width calculation
+                            margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                            decoration: BoxDecoration(
+                              color: Colors.amber,
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Center(
+                              child: Text(
+                                // Simplified child
+                                'Promotion $i',
+                                style: const TextStyle(fontSize: 16.0),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
                 ),
-                items: [1, 2, 3, 4, 5].map((i) {
-                  return Builder(
-                    builder: (BuildContext context) {
-                      return Container(
-                        width: MediaQuery.of(
-                          context,
-                        ).size.width, // Corrected width calculation
-                        margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                        decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: BorderRadius.circular(8.0),
+
+                // Product Grid
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'Featured Products',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16.0,
+                          mainAxisSpacing: 16.0,
+                          childAspectRatio: 0.75,
                         ),
-                        child: Center(
-                          child: Text(
-                            // Simplified child
-                            'Promotion $i',
-                            style: const TextStyle(fontSize: 16.0),
-                          ),
-                        ),
+                    itemCount: 10, // Placeholder item count
+                    itemBuilder: (context, index) {
+                      // Simulate some flash sales or discounts
+                      bool isFlashSale = index % 3 == 0;
+                      bool hasDiscount = index % 4 == 0;
+
+                      return ProductCard(
+                        productName: 'Product ${index + 1}',
+                        productPrice: '\$${(index + 1) * 10}',
+                        imageUrl:
+                            'https://via.placeholder.com/150', // Placeholder image
+                        isFlashSale: isFlashSale,
+                        hasDiscount: hasDiscount,
                       );
                     },
-                  );
-                }).toList(),
-              ),
-            ),
-
-            // Product Grid
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Featured Products',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 0.75,
+                  ),
                 ),
-                itemCount: 10, // Placeholder item count
-                itemBuilder: (context, index) {
-                  // Simulate some flash sales or discounts
-                  bool isFlashSale = index % 3 == 0;
-                  bool hasDiscount = index % 4 == 0;
-
-                  return ProductCard(
-                    productName: 'Product ${index + 1}',
-                    productPrice: '\$${(index + 1) * 10}',
-                    imageUrl:
-                        'https://via.placeholder.com/150', // Placeholder image
-                    isFlashSale: isFlashSale,
-                    hasDiscount: hasDiscount,
-                  );
-                },
-              ),
+                const SizedBox(height: 16.0), // Add some spacing at the bottom
+              ],
             ),
-            const SizedBox(height: 16.0), // Add some spacing at the bottom
+            // Positioned(
+            //   bottom: 16.0,
+            //   left: 0,
+            //   right: 0,
+            //   child: Center(
+            //     child: FloatingActionButton(
+            //       onPressed: () {
+            //         // Handle search button press
+            //       },
+            //       child: Image.asset('assets/images/Search.png'),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
+      floatingActionButton: SizedBox(
+        width: 150,
+        height: 150,
+        child: RawMaterialButton(
+          onPressed: () {
+            // Navigate to the SearchPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SearchPage()),
+            );
+          },
+
+          elevation: 0,
+          fillColor: Colors.transparent,
+          shape: const CircleBorder(),
+          child: Image.asset(
+            "assets/images/Search.png",
+            width: 140,
+            height: 140,
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
