@@ -1,9 +1,162 @@
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart'; // Corrected import path
-import 'package:myapp/search_page.dart'; // Import the SearchPage
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:myapp/search_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  final List<String> promoImages = const [
+    "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c", // fashion
+    "https://images.unsplash.com/photo-1503602642458-232111445657", // shoes
+    "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f", // electronics
+    "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f", // gadgets
+    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e", // headphones
+  ];
+
+  final List<Map<String, dynamic>> products = const [
+  { 
+    "name": "Wireless Headphones",
+    "price": "\$59.99",
+    "image": "https://images.pexels.com/photos/3394667/pexels-photo-3394667.jpeg",
+    "flashSale": true,
+    "discount": false
+  },
+  {
+    "name": "Smart Watch",
+    "price": "\$129.99",
+    "image": "https://images.pexels.com/photos/277394/pexels-photo-277394.jpeg",
+    "flashSale": false,
+    "discount": true
+  },
+  {
+    "name": "Running Shoes",
+    "price": "\$89.99",
+    "image": "https://images.pexels.com/photos/19090/pexels-photo.jpg",
+    "flashSale": false,
+    "discount": false
+  },
+  {
+    "name": "Leather Backpack",
+    "price": "\$74.99",
+    "image": "https://images.pexels.com/photos/322207/pexels-photo-322207.jpeg",
+    "flashSale": true,
+    "discount": false
+  },
+  {
+    "name": "Casual Sunglasses",
+    "price": "\$25.99",
+    "image": "https://images.pexels.com/photos/46710/pexels-photo-46710.jpeg",
+    "flashSale": false,
+    "discount": true
+  },
+  {
+    "name": "Gaming Laptop",
+    "price": "\$999.99",
+    "image": "https://images.pexels.com/photos/18105/pexels-photo.jpg",
+    "flashSale": false,
+    "discount": false
+  },
+  {
+    "name": "Bluetooth Speaker",
+    "price": "\$39.99",
+    "image": "https://images.pexels.com/photos/374870/pexels-photo-374870.jpeg",
+    "flashSale": true,
+    "discount": true
+  },
+  {
+    "name": "DSLR Camera",
+    "price": "\$549.99",
+    "image": "https://images.pexels.com/photos/51383/camera-slr-digital-photography-51383.jpeg",
+    "flashSale": false,
+    "discount": true
+  },
+  {
+    "name": "Office Chair",
+    "price": "\$199.99",
+    "image": "https://images.pexels.com/photos/696407/pexels-photo-696407.jpeg",
+    "flashSale": true,
+    "discount": false
+  },
+  {
+    "name": "Fitness Dumbbells",
+    "price": "\$45.99",
+    "image": "https://images.pexels.com/photos/1552249/pexels-photo-1552249.jpeg",
+    "flashSale": false,
+    "discount": true
+  },
+  {
+    "name": "Electric Guitar",
+    "price": "\$349.99",
+    "image": "https://images.pexels.com/photos/164936/pexels-photo-164936.jpeg",
+    "flashSale": true,
+    "discount": false
+  },
+  {
+    "name": "Coffee Maker",
+    "price": "\$89.99",
+    "image": "https://images.pexels.com/photos/585750/pexels-photo-585750.jpeg",
+    "flashSale": false,
+    "discount": true
+  },
+  {
+    "name": "Mountain Bike",
+    "price": "\$499.99",
+    "image": "https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg",
+    "flashSale": true,
+    "discount": false
+  },
+  {
+    "name": "Smartphone",
+    "price": "\$699.99",
+    "image": "https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg",
+    "flashSale": false,
+    "discount": true
+  },
+  {
+    "name": "Wireless Keyboard",
+    "price": "\$49.99",
+    "image": "https://images.pexels.com/photos/205421/pexels-photo-205421.jpeg",
+    "flashSale": true,
+    "discount": false
+  },
+  // 🔥 New Items Added
+  {
+    "name": "Portable Power Bank",
+    "price": "\$29.99",
+    "image": "https://images.pexels.com/photos/4042800/pexels-photo-4042800.jpeg",
+    "flashSale": true,
+    "discount": true
+  },
+  {
+    "name": "4K Smart TV",
+    "price": "\$899.99",
+    "image": "https://images.pexels.com/photos/5721902/pexels-photo-5721902.jpeg",
+    "flashSale": false,
+    "discount": true
+  },
+  {
+    "name": "Noise Cancelling Earbuds",
+    "price": "\$79.99",
+    "image": "https://images.pexels.com/photos/3394658/pexels-photo-3394658.jpeg",
+    "flashSale": true,
+    "discount": false
+  },
+  {
+    "name": "Drone Camera",
+    "price": "\$649.99",
+    "image": "https://images.pexels.com/photos/442587/pexels-photo-442587.jpeg",
+    "flashSale": true,
+    "discount": true
+  },
+  {
+    "name": "Digital Alarm Clock",
+    "price": "\$19.99",
+    "image": "https://images.pexels.com/photos/4045655/pexels-photo-4045655.jpeg",
+    "flashSale": false,
+    "discount": false
+  },
+];
+
 
   @override
   Widget build(BuildContext context) {
@@ -22,148 +175,85 @@ class HomePage extends StatelessWidget {
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
+          children: const <Widget>[
+            DrawerHeader(
               decoration: BoxDecoration(color: Colors.blue),
               child: Text(
                 'Menu',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.category),
-              title: const Text('Categories'),
-              onTap: () {
-                // Handle categories
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.favorite),
-              title: const Text('Wishlist'),
-              onTap: () {
-                // Handle wishlist
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                // Handle settings
-              },
-            ),
+            ListTile(leading: Icon(Icons.home), title: Text('Home')),
+            ListTile(leading: Icon(Icons.category), title: Text('Categories')),
+            ListTile(leading: Icon(Icons.favorite), title: Text('Wishlist')),
+            ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
           ],
         ),
       ),
       body: SingleChildScrollView(
-        // Removed Stack and Positioned for persistent FloatingActionButton
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Promotional Carousel
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: CarouselSlider(
-                    options: CarouselOptions(
-                      height: 180.0,
-                      autoPlay: true, // Corrected autoPlay casing
-                      enlargeCenterPage: true,
-                      aspectRatio: 16 / 9,
-                      autoPlayCurve: Curves
-                          .fastOutSlowIn, // Corrected autoPlayCurve casing
-                      enableInfiniteScroll: true,
-                      autoPlayAnimationDuration: const Duration(
-                        milliseconds: 800,
-                      ), // Corrected autoPlayAnimationDuration casing
-                      viewportFraction: 0.8,
+            /// Promotional Carousel
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: CarouselSlider(
+                options: CarouselOptions(
+                  height: 180.0,
+                  autoPlay: true,
+                  enlargeCenterPage: true,
+                  aspectRatio: 16 / 9,
+                  autoPlayCurve: Curves.fastOutSlowIn,
+                  enableInfiniteScroll: true,
+                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                  viewportFraction: 0.8,
+                ),
+                items: promoImages.map((url) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      url,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
                     ),
-                    items: [1, 2, 3, 4, 5].map((i) {
-                      return Builder(
-                        builder: (BuildContext context) {
-                          return Container(
-                            width: MediaQuery.of(
-                              context,
-                            ).size.width, // Corrected width calculation
-                            margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                            decoration: BoxDecoration(
-                              color: Colors.amber,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: Center(
-                              child: Text(
-                                // Simplified child
-                                'Promotion $i',
-                                style: const TextStyle(fontSize: 16.0),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-                // Product Grid
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'Featured Products',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16.0,
-                          mainAxisSpacing: 16.0,
-                          childAspectRatio: 0.75,
-                        ),
-                    itemCount: 10, // Placeholder item count
-                    itemBuilder: (context, index) {
-                      // Simulate some flash sales or discounts
-                      bool isFlashSale = index % 3 == 0;
-                      bool hasDiscount = index % 4 == 0;
-
-                      return ProductCard(
-                        productName: 'Product ${index + 1}',
-                        productPrice: '\$${(index + 1) * 10}',
-                        imageUrl:
-                            'https://via.placeholder.com/150', // Placeholder image
-                        isFlashSale: isFlashSale,
-                        hasDiscount: hasDiscount,
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16.0), // Add some spacing at the bottom
-              ],
+                  );
+                }).toList(),
+              ),
             ),
-            // Positioned(
-            //   bottom: 16.0,
-            //   left: 0,
-            //   right: 0,
-            //   child: Center(
-            //     child: FloatingActionButton(
-            //       onPressed: () {
-            //         // Handle search button press
-            //       },
-            //       child: Image.asset('assets/images/Search.png'),
-            //     ),
-            //   ),
-            // ),
+
+            /// Featured Products
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Featured Products',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16.0,
+                  mainAxisSpacing: 16.0,
+                  childAspectRatio: 0.75,
+                ),
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  final product = products[index];
+                  return ProductCard(
+                    productName: product["name"],
+                    productPrice: product["price"],
+                    imageUrl: product["image"],
+                    isFlashSale: product["flashSale"],
+                    hasDiscount: product["discount"],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16.0),
           ],
         ),
       ),
@@ -172,13 +262,13 @@ class HomePage extends StatelessWidget {
         height: 150,
         child: RawMaterialButton(
           onPressed: () {
-            // Navigate to the SearchPage
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => SearchPage()),
+              MaterialPageRoute(
+                builder: (context) => SearchPage(products: products), 
+              ),
             );
           },
-
           elevation: 0,
           fillColor: Colors.transparent,
           shape: const CircleBorder(),
@@ -195,6 +285,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
+/// Product Card
 class ProductCard extends StatelessWidget {
   final String productName;
   final String productPrice;
@@ -223,9 +314,8 @@ class ProductCard extends StatelessWidget {
             child: Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(8.0),
-                  ),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(8.0)),
                   child: Image.network(
                     imageUrl,
                     fit: BoxFit.cover,
@@ -238,9 +328,7 @@ class ProductCard extends StatelessWidget {
                     left: 8.0,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 6.0,
-                        vertical: 2.0,
-                      ),
+                          horizontal: 6.0, vertical: 2.0),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(4.0),
@@ -255,22 +343,19 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                if (hasDiscount &&
-                    !isFlashSale) // Avoid showing both badges in the same corner
+                if (hasDiscount && !isFlashSale)
                   Positioned(
                     top: 8.0,
                     right: 8.0,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 6.0,
-                        vertical: 2.0,
-                      ),
+                          horizontal: 6.0, vertical: 2.0),
                       decoration: BoxDecoration(
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(4.0),
                       ),
                       child: const Text(
-                        '-10%', // Placeholder discount percentage
+                        '-10%',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 10.0,
@@ -292,9 +377,7 @@ class ProductCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+                      fontSize: 14.0, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4.0),
                 Text(

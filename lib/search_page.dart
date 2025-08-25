@@ -1,17 +1,45 @@
 import 'package:flutter/material.dart';
 
-class SearchPage extends StatelessWidget {
-  // Sample data for categories (replace with your actual data)
+class SearchPage extends StatefulWidget {
+  final List<Map<String, dynamic>> products;
+
+  const SearchPage({Key? key, required this.products}) : super(key: key);
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> _filteredProducts = [];
+
+  // Sample categories (you can extend this)
   final List<Map<String, dynamic>> categories = [
-    {'name': 'Beauty', 'color': const Color(0xFFFE6EA1), 'icon': Icons.face},
-    {'name': 'Gadgets', 'color': const Color(0xFFFFD700), 'icon': Icons.lightbulb},
-    {'name': 'Games', 'color': const Color(0xFF4CAF50), 'icon': Icons.sports_esports},
-    {'name': 'Dine', 'color': const Color(0xFFF44336), 'icon': Icons.restaurant},
-    {'name': 'Sports', 'color': const Color(0xFF2196F3), 'icon': Icons.directions_run},
-    // Add more categories as needed
+    {'name': 'Beauty', 'color': Color(0xFFFE6EA1), 'icon': Icons.face},
+    {'name': 'Gadgets', 'color': Color(0xFFFFD700), 'icon': Icons.lightbulb},
+    {'name': 'Games', 'color': Color(0xFF4CAF50), 'icon': Icons.sports_esports},
+    {'name': 'Dine', 'color': Color(0xFFF44336), 'icon': Icons.restaurant},
+    {'name': 'Sports', 'color': Color(0xFF2196F3), 'icon': Icons.directions_run},
   ];
 
-  SearchPage({Key? key}) : super(key: key);
+  @override
+  void initState() {
+    super.initState();
+    _filteredProducts = widget.products; // show all initially
+  }
+
+  void _filterSearch(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredProducts = widget.products;
+      } else {
+        _filteredProducts = widget.products
+            .where((product) =>
+                product['name'].toString().toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +54,8 @@ class SearchPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: TextField(
+            controller: _searchController,
+            onChanged: _filterSearch,
             decoration: InputDecoration(
               hintText: 'Search for a Product',
               prefixIcon: const Icon(Icons.search),
@@ -36,9 +66,10 @@ class SearchPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert),
+            icon: const Icon(Icons.clear),
             onPressed: () {
-              // Handle more options
+              _searchController.clear();
+              _filterSearch('');
             },
           ),
         ],
@@ -57,7 +88,7 @@ class SearchPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16.0), // Space below AppBar
+                // Categories
                 SizedBox(
                   height: 80,
                   child: ListView.builder(
@@ -73,51 +104,42 @@ class SearchPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Bulk Discounts!',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // Handle View All
-                      },
-                      child: const Text(
-                        'View All',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16.0),
-                // Placeholder for Bulk Discounts
-                Container(
-                  height: 200, // Adjust height as needed
-                  color: Colors.grey[300],
-                  child: const Center(child: Text('Bulk Discounts Grid/List')),
-                ),
-                const SizedBox(height: 24.0),
+
+                // Search Results
                 const Text(
-                  'Top Products in March',
+                  'Search Results',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 16.0),
-                // Placeholder for Top Products in March
-                Container(
-                  height: 300, // Adjust height as needed
-                  color: Colors.grey[300],
-                  child: const Center(child: Text('Top Products List')),
-                ),
+                const SizedBox(height: 12.0),
+
+                _filteredProducts.isEmpty
+                    ? const Text("No products found",
+                        style: TextStyle(color: Colors.white))
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _filteredProducts.length,
+                        itemBuilder: (context, index) {
+                          final product = _filteredProducts[index];
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              leading: const Icon(Icons.shopping_bag),
+                              title: Text(product['name']),
+                              subtitle: Text("\$${product['price']}"),
+                              onTap: () {
+                                // Handle product click
+                              },
+                            ),
+                          );
+                        },
+                      ),
               ],
             ),
           ),
@@ -132,7 +154,9 @@ class CategoryButton extends StatelessWidget {
   final Color color;
   final IconData icon;
 
-  const CategoryButton({Key? key, required this.name, required this.color, required this.icon}) : super(key: key);
+  const CategoryButton(
+      {Key? key, required this.name, required this.color, required this.icon})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +172,8 @@ class CategoryButton extends StatelessWidget {
             child: Icon(icon, color: Colors.white),
           ),
           const SizedBox(height: 4.0),
-          Text(name, style: const TextStyle(fontSize: 12.0, color: Colors.white)),
+          Text(name,
+              style: const TextStyle(fontSize: 12.0, color: Colors.white)),
         ],
       ),
     );
