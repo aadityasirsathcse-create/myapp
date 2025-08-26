@@ -1,0 +1,135 @@
+[
+  {
+    "name": "Wireless Headphones",
+    "price": 59.99,
+    "image": "https://images.pexels.com/photos/3394667/pexels-photo-3394667.jpeg",
+    "flashSale": true,
+    "discount": false,
+    "category": "Electronics",
+    "description": "Noise-cancelling over-ear headphones with 20 hours of battery life."
+  },
+  {
+    "name": "Smart Watch",
+    "price": 129.99,
+    "image": "https://images.pexels.com/photos/277394/pexels-photo-277394.jpeg",
+    "flashSale": false,
+    "discount": true,
+    "category": "Electronics",
+    "description": "Fitness-focused smartwatch with heart rate monitor and GPS tracking."
+  },
+  {
+    "name": "Running Shoes",
+    "price": 89.99,
+    "image": "https://images.pexels.com/photos/19090/pexels-photo.jpg",
+    "flashSale": false,
+    "discount": false,
+    "category": "Footwear",
+    "description": "Lightweight running shoes designed for comfort and durability."
+  },
+  {
+    "name": "Leather Backpack",
+    "price": 74.99,
+    "image": "https://images.pexels.com/photos/322207/pexels-photo-322207.jpeg",
+    "flashSale": true,
+    "discount": false,
+    "category": "Accessories",
+    "description": "Stylish brown leather backpack with multiple compartments."
+  },
+  {
+    "name": "Casual Sunglasses",
+    "price": 25.99,
+    "image": "https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg",
+    "flashSale": false,
+    "discount": false,
+    "category": "Accessories",
+    "description": "UV-protected polarized sunglasses for daily outdoor wear."
+  },
+  {
+    "name": "Samsung Galaxy S10",
+    "price": 860.00,
+    "originalPrice": 1000.00,
+    "image": "https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg",
+    "category": "Electronics",
+    "description": "Powerful smartphone with AMOLED display and triple camera setup."
+  },
+  {
+    "name": "Stone Plant",
+    "price": 16.00,
+    "originalPrice": 30.00,
+    "image": "https://images.pexels.com/photos/5699661/pexels-photo-5699661.jpeg",
+    "category": "Home & Garden",
+    "description": "Small decorative succulent plant in a ceramic pot."
+  },
+  {
+    "name": "Xiaomi Mi Airdots",
+    "price": 30.00,
+    "originalPrice": 50.00,
+    "image": "https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg",
+    "category": "Electronics",
+    "description": "True wireless earbuds with Bluetooth 5.0 and charging case."
+  },
+  {
+    "name": "Gaming Laptop",
+    "price": 1199.99,
+    "originalPrice": 1400.00,
+    "image": "https://images.pexels.com/photos/18105/pexels-photo.jpg",
+    "category": "Electronics",
+    "description": "High-performance gaming laptop with RTX graphics and SSD storage."
+  },
+  {
+    "name": "Office Chair",
+    "price": 199.99,
+    "image": "https://images.pexels.com/photos/813691/pexels-photo-813691.jpeg",
+    "category": "Home & Garden",
+    "description": "Ergonomic office chair with adjustable height and lumbar support."
+  },
+  {
+    "name": "Yoga Mat",
+    "price": 29.99,
+    "image": "https://images.pexels.com/photos/4056723/pexels-photo-4056723.jpeg",
+    "category": "Sports & Fitness",
+    "description": "Non-slip yoga mat perfect for pilates, stretching, and workouts."
+  },
+  {
+    "name": "Electric Kettle",
+    "price": 45.99,
+    "image": "https://images.pexels.com/photos/410999/pexels-photo-410999.jpeg",
+    "category": "Home Appliances",
+    "description": "Stainless steel electric kettle with automatic shut-off."
+  },
+  {
+    "name": "Lipstick Set",
+    "price": 22.99,
+    "image": "https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg",
+    "category": "Beauty",
+    "description": "Matte lipstick set with five different shades for daily wear."
+  },
+  {
+    "name": "Winter Jacket",
+    "price": 149.99,
+    "image": "https://images.pexels.com/photos/3222073/pexels-photo-3222073.jpeg",
+    "category": "Fashion",
+    "description": "Warm and stylish puffer jacket suitable for cold winters."
+  },
+  {
+    "name": "Acoustic Guitar",
+    "price": 249.99,
+    "image": "https://images.pexels.com/photos/164743/pexels-photo-164743.jpeg",
+    "category": "Musical Instruments",
+    "description": "Classic 6-string acoustic guitar for beginners and professionals."
+  },
+  {
+    "name": "Coffee Maker",
+    "price": 89.00,
+    "image": "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg",
+    "category": "Home Appliances",
+    "description": "Automatic drip coffee maker with programmable timer."
+  },
+  {
+    "name": "Wireless Keyboard & Mouse Combo",
+    "price": 49.99,
+    "image": "https://images.pexels.com/photos/461077/pexels-photo-461077.jpeg",
+    "category": "Electronics",
+    "description": "Slim wireless keyboard and mouse set with long battery life."
+  }
+]
