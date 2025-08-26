@@ -4,6 +4,7 @@ import 'package:myapp/home_page.dart';
 import 'package:myapp/onboarding_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:myapp/signup_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:myapp/login_page.dart';
 import 'firebase_options.dart';
 import 'package:myapp/product_detail_page.dart';
@@ -16,6 +17,7 @@ final _router = GoRouter(
     GoRoute(path: '/home', builder: (context, state) => const HomePage()),
     GoRoute(path: '/productDetail', builder: (context, state) => ProductDetailPage(product: state.extra as Map<String, dynamic>)),
   ],
+  initialLocation: FirebaseAuth.instance.currentUser != null ? '/home' : '/',
 );
 
 void main() async {
