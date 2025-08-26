@@ -341,13 +341,7 @@ class HomePage extends StatelessWidget {
                 itemCount: products.length,
                 itemBuilder: (context, index) {
                   final product = products[index];
-                  return ProductCard(
-                    productName: product["name"],
-                    productPrice: product["price"], // now num
-                    imageUrl: product["image"],
-                    isFlashSale: product["flashSale"],
-                    hasDiscount: product["discount"],
-                  );
+                  return ProductCard(product: product);
                 },
               ),
             ),
@@ -385,24 +379,24 @@ class HomePage extends StatelessWidget {
 
 /// Product Card
 class ProductCard extends StatelessWidget {
-  final String productName;
-  final num productPrice; // changed from String → num
-  final String imageUrl;
+  final Map<String, dynamic> product;
   final bool isFlashSale;
   final bool hasDiscount;
 
   const ProductCard({
     Key? key,
-    required this.productName,
-    required this.productPrice,
-    required this.imageUrl,
-    this.isFlashSale = false,
-    this.hasDiscount = false,
+    required this.product,
+    this.isFlashSale = false, // These might still be relevant if your product data has them
+    this.hasDiscount = false, // and you want to display badges based on them.
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return InkWell(
+      onTap: () {
+        context.go('/productDetail', extra: product);
+      },
+      child: Card(
       elevation: 2.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       child: Column(
@@ -416,7 +410,7 @@ class ProductCard extends StatelessWidget {
                     top: Radius.circular(8.0),
                   ),
                   child: Image.network(
-                    imageUrl,
+                    product['image'],
                     fit: BoxFit.cover,
                     width: double.infinity,
                   ),
@@ -446,7 +440,7 @@ class ProductCard extends StatelessWidget {
                   ),
                 if (hasDiscount && !isFlashSale)
                   Positioned(
-                    top: 8.0,
+                    top: 8.0, // Keep this if you want discount badge
                     right: 8.0,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -474,9 +468,9 @@ class ProductCard extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  productName,
+               children: [
+                Text( // Use product['name']
+                  product['name'],
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -486,14 +480,15 @@ class ProductCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4.0),
                 Text(
-                  "\$${productPrice.toStringAsFixed(2)}", // formatted properly
-                  style: TextStyle(fontSize: 12.0, color: Colors.grey[700]),
+                  "\$${product['price'].toStringAsFixed(2)}", // formatted properly
+                  style: TextStyle(fontSize: 12.0, color: Colors.grey[700]), // Assuming 'price' is a num
                 ),
               ],
             ),
           ),
         ],
       ),
+      )
     );
   }
 }
