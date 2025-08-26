@@ -245,7 +245,7 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 onPressed: () {
-                  // TODO: Implement shopping cart functionality
+                  context.go('/cart');
                 },
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:myapp/cart_page.dart';
 import 'package:myapp/home_page.dart';
 import 'package:myapp/onboarding_page.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,6 +17,7 @@ final _router = GoRouter(
     GoRoute(path: '/signup', builder: (context, state) => const SignUpPage()),
     GoRoute(path: '/home', builder: (context, state) => const HomePage()),
     GoRoute(path: '/productDetail', builder: (context, state) => ProductDetailPage(product: state.extra as Map<String, dynamic>)),
+    GoRoute(path: '/cart', builder: (context, state) => const CartPage()),
   ],
   initialLocation: FirebaseAuth.instance.currentUser != null ? '/home' : '/',
 );
