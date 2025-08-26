@@ -159,65 +159,68 @@ final List<Map<String, dynamic>> topProducts = [
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Categories
-                  const SizedBox(height: 16.0), // Add spacing after app bar
-                  SizedBox(
-                    height: 90, // Increased height to accommodate text and icon
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: categories.length,
-                      itemBuilder: (context, index) {
-                        return CategoryButton(
-                          name: categories[index]['name'],
-                          color: categories[index]['color'],
-                          icon: categories[index]['icon'],
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 24.0),
-
-                  // Bulk Discounts
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Bulk Discounts!',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                children: _searchController.text.isEmpty
+                    ? [
+                        // Categories
+                        const SizedBox(
+                            height: 16.0), // Add spacing after app bar
+                        SizedBox(
+                          height:
+                              90, // Increased height to accommodate text and icon
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: categories.length,
+                            itemBuilder: (context, index) {
+                              return CategoryButton(
+                                name: categories[index]['name'],
+                                color: categories[index]['color'],
+                                icon: categories[index]['icon'],
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          // TODO: Implement view all action
-                        },
-                        child: const Text(
-                          'View All',
-                          style: TextStyle(color: Colors.white70),
+                        const SizedBox(height: 24.0),
+
+                        // Bulk Discounts
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Bulk Discounts!',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // TODO: Implement view all action
+                              },
+                              child: const Text(
+                                'View All',
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12.0),
-                  SizedBox(
-                    height: 210, // Adjust height as needed
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: bulkDiscountProducts.length,
-                      itemBuilder: (context, index) {
-                        final product = bulkDiscountProducts[index];
-                        return BulkDiscountProductCard(product: product);
-                      },
-                    ),
-                  ),
+                        const SizedBox(height: 12.0),
+                        SizedBox(
+                          height: 210, // Adjust height as needed
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: bulkDiscountProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = bulkDiscountProducts[index];
+                              return BulkDiscountProductCard(product: product);
+                            },
+                          ),
+                        ),
 
-                  const SizedBox(height: 24.0),
+                        const SizedBox(height: 24.0),
 
-                  // Top Products in March
-                  const Text(
+                        // Top Products in March
+                        const Text(
                     'Top Products in March',
                     style: TextStyle(
                       fontSize: 20,
@@ -233,15 +236,72 @@ final List<Map<String, dynamic>> topProducts = [
                     itemBuilder: (context, index) {
                       final product = topProducts[index];
                       return TopProductCard(index: index + 1, product: product);
-                    },
-                  ),
-
-                  // You can add a section for search results here if needed,
-                  // or integrate _filteredProducts into the existing sections
-                  // based on how you want the search to interact with the design.
-                  // For now, the existing search results are not explicitly shown
-                  // in a separate section based on the image.
-                ],
+                          },
+                        ),
+                      ]
+                    : [
+                        // Search Results
+                        const SizedBox(height: 16.0),
+                        _filteredProducts.isEmpty
+                            ? const Center(
+                                child: Text(
+                                'No products found',
+                                style: TextStyle(color: Colors.white),
+                                ),
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _filteredProducts.length,
+                                itemBuilder: (context, index) {
+                                  final product = _filteredProducts[index];
+                                  return Card(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    margin:
+                                        const EdgeInsets.only(bottom: 12.0),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Row(
+                                        children: [
+                                          // You can add an image here if your product data has one
+                                          // ClipRRect(
+                                          //   borderRadius: BorderRadius.circular(8),
+                                          //   child: Image.network(product['image'] ?? 'https://via.placeholder.com/50', height: 50, width: 50, fit: BoxFit.cover),
+                                          // ),
+                                          // const SizedBox(width: 12.0),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  product['name'],
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  'USD ${product['price'].toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                    color: Colors.green,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                      ],
               ),
             ),
           ),

@@ -15,6 +15,7 @@ class ProductDetailPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.clear),
             onPressed: () {
+              context.go('/'); // Navigate back to the home page
             },
           ),
         ],
@@ -23,8 +24,14 @@ class ProductDetailPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.shopping_bag, size: 100),
-            const SizedBox(height: 20),
+            // Display product image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                product['image'] ?? 'https://via.placeholder.com/250', // Fallback placeholder
+                height: 250, // Adjust height as needed
+                fit: BoxFit.cover,
+              )),
             Text(
               product['name'],
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
