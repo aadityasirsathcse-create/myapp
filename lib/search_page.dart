@@ -29,43 +29,50 @@ class _SearchPageState extends State<SearchPage> {
 
   // Sample data for sections
   final List<Map<String, dynamic>> bulkDiscountProducts = [
-    {
-      'name': 'Samsung Galaxy S10',
-      'price': 860.00,
-      'originalPrice': 1000.00,
-      'image': 'assets/images/galaxy_s10.png', // Placeholder
-      'featured': true,
-    },
-    {
-      'name': 'Stone Plante',
-      'price': 16.00,
-      'originalPrice': 30.00,
-      'image': 'assets/images/stone_plante.png', // Placeholder
-      'featured': false,
-    },
-    {
-      'name': 'Xiaomi Mi Airdots',
-      'price': 30.00,
-      'originalPrice': 50.00,
-      'image': 'assets/images/mi_airdots.png', // Placeholder
-      'featured': false,
-    },
-  ];
+      {
+    'name': 'Samsung Galaxy S10',
+    'price': 860.00,
+    'originalPrice': 1000.00,
+    'image': 'https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg',
+    'featured': true,
+  },
+  {
+    'name': 'Stone Plant',
+    'price': 16.00,
+    'originalPrice': 30.00,
+    'image': 'https://images.pexels.com/photos/5699661/pexels-photo-5699661.jpeg',
+    'featured': false,
+  },
+  {
+    'name': 'Xiaomi Mi Airdots',
+    'price': 30.00,
+    'originalPrice': 50.00,
+    'image': 'https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg',
+    'featured': false,
+  },
+];
 
-  final List<Map<String, dynamic>> topProducts = [
+final List<Map<String, dynamic>> topProducts = [
+  {
+    'name': 'Scent Tray',
+    'price': 68.00,
+    'description':
+        'Features an elegant black dish to capture the falling ash that captures the',
+    'image': 'https://images.pexels.com/photos/4790082/pexels-photo-4790082.jpeg',
+  },
+  {
+    'name': 'Fidget Spinner',
+    'price': 10.00,
+    'description': 'A classic stress reliever for all ages.',
+    'image': 'https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg',
+  },
     {
-      'name': 'Scent Tray',
-      'price': 68.00,
-      'description':
-          'Features an elegant black dish to capture the falling ash that captures the',
-      'image': 'assets/images/scent_tray.png', // Placeholder
-    },
-    {
-      'name': 'Fidget Spinner',
-      'price': 10.00,
-      'description': 'A classic stress reliever for all ages.',
-      'image': 'assets/images/fidget_spinner.png', // Placeholder
-    },
+    'name': 'Scent Tray',
+    'price': 68.00,
+    'description':
+        'Features an elegant black dish to capture the falling ash that captures the',
+    'image': 'https://images.pexels.com/photos/5699661/pexels-photo-5699661.jpeg',
+  },
   ];
 
   @override
@@ -140,7 +147,7 @@ class _SearchPageState extends State<SearchPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF6A1B9A), Color(0xFFE1BEE7)],
+            colors: [Color.fromARGB(255, 85, 101, 251),Color.fromARGB(255, 107, 166, 248)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -196,7 +203,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   const SizedBox(height: 12.0),
                   SizedBox(
-                    height: 220, // Adjust height as needed
+                    height: 210, // Adjust height as needed
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: bulkDiscountProducts.length,
@@ -311,15 +318,16 @@ class BulkDiscountProductCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.asset(
-              product['image'] ??
-                  'assets/images/placeholder.png', // Use placeholder if image is null
-              height: 100, // Adjust height as needed
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
-          ),
+  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+  child: Image.network(
+    product['image'] ??
+        'https://via.placeholder.com/150', // Fallback placeholder
+    height: 100,
+    width: double.infinity,
+    fit: BoxFit.cover,
+  ),
+),
+
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
@@ -414,15 +422,16 @@ class TopProductCard extends StatelessWidget {
             ),
             const SizedBox(width: 12.0),
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                product['image'] ??
-                    'assets/images/placeholder.png', // Use placeholder if image is null
-                height: 80,
-                width: 80,
-                fit: BoxFit.cover,
-              ),
-            ),
+  borderRadius: BorderRadius.circular(8),
+  child: Image.network(
+    product['image'] ??
+        'https://via.placeholder.com/150', // Fallback placeholder
+    height: 80,
+    width: 80,
+    fit: BoxFit.cover,
+  ),
+),
+
             const SizedBox(width: 12.0),
             Expanded(
               child: Column(
