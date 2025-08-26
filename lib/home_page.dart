@@ -73,7 +73,7 @@ class HomePage extends StatelessWidget {
       "name": "DSLR Camera",
       "price": 549.99,
       "image":
-          "https://images.pexels.com/photos/51383/camera-slr-digital-photography-51383.jpeg",
+          'https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg',
       "flashSale": false,
       "discount": true,
     },
@@ -169,7 +169,7 @@ class HomePage extends StatelessWidget {
       "name": "Digital Alarm Clock",
       "price": 19.99,
       "image":
-          "https://images.pexels.com/photos/4045655/pexels-photo-4045655.jpeg",
+          'https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg',
       "flashSale": false,
       "discount": false,
     },
@@ -196,17 +196,17 @@ class HomePage extends StatelessWidget {
             );
           },
         ),
-        title: const Align(
-          alignment: Alignment.centerRight, // Move title to the right
-          // child: Text(
-          //   'My Cart',
-          //   style: TextStyle(
-          //     color: Colors.black,
-          //     fontSize: 18, // smaller font size
-          //     fontWeight: FontWeight.w500, // optional
-          //   ),
-          // ),
-        ),
+        // title: const Align(
+        //   alignment: Alignment.centerRight, // Move title to the right
+        //   // child: Text(
+        //   //   'My Cart',
+        //   //   style: TextStyle(
+        //   //     color: Colors.black,
+        //   //     fontSize: 18, // smaller font size
+        //   //     fontWeight: FontWeight.w500, // optional
+        //   //   ),
+        //   // ),
+        // ),
         centerTitle: false,
         actions: [
           Row(
@@ -257,13 +257,45 @@ class HomePage extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: <Widget>[
             const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 85, 101, 251),
+              Color.fromARGB(255, 107, 166, 248),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+              ),
               child: Text(
                 'Menu',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
-            const ListTile(leading: Icon(Icons.home), title: Text('Home')),
+             Builder(
+        builder: (context) {
+          final user = FirebaseAuth.instance.currentUser;
+          return user != null
+              ? ListTile(
+                  leading: const Icon(Icons.person, color: Colors.blue),
+                  title: Text(user.displayName ?? 'No Name'),
+                  subtitle: Text(user.email ?? 'No Email'),
+                )
+              : const ListTile(
+                  leading: Icon(Icons.person_off, color: Colors.grey),
+                  title: Text('Not logged in'),
+                );
+        },
+      ),
+       const Divider(),
+            ListTile(
+              leading: const Icon(Icons.home), 
+              title: const Text('Home'),
+               onTap: () async {
+                await FirebaseAuth.instance.signOut();
+                context.go('/home');
+              },
+              ),
             const ListTile(
               leading: Icon(Icons.category),
               title: Text('Categories'),

@@ -29,50 +29,56 @@ class _SearchPageState extends State<SearchPage> {
 
   // Sample data for sections
   final List<Map<String, dynamic>> bulkDiscountProducts = [
-      {
-    'name': 'Samsung Galaxy S10',
-    'price': 860.00,
-    'originalPrice': 1000.00,
-    'image': 'https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg',
-    'featured': true,
-  },
-  {
-    'name': 'Stone Plant',
-    'price': 16.00,
-    'originalPrice': 30.00,
-    'image': 'https://images.pexels.com/photos/5699661/pexels-photo-5699661.jpeg',
-    'featured': false,
-  },
-  {
-    'name': 'Xiaomi Mi Airdots',
-    'price': 30.00,
-    'originalPrice': 50.00,
-    'image': 'https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg',
-    'featured': false,
-  },
-];
-
-final List<Map<String, dynamic>> topProducts = [
-  {
-    'name': 'Scent Tray',
-    'price': 68.00,
-    'description':
-        'Features an elegant black dish to capture the falling ash that captures the',
-    'image': 'https://images.pexels.com/photos/4790082/pexels-photo-4790082.jpeg',
-  },
-  {
-    'name': 'Fidget Spinner',
-    'price': 10.00,
-    'description': 'A classic stress reliever for all ages.',
-    'image': 'https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg',
-  },
     {
-    'name': 'Scent Tray',
-    'price': 68.00,
-    'description':
-        'Features an elegant black dish to capture the falling ash that captures the',
-    'image': 'https://images.pexels.com/photos/5699661/pexels-photo-5699661.jpeg',
-  },
+      'name': 'Samsung Galaxy S10',
+      'price': 860.00,
+      'originalPrice': 1000.00,
+      'image':
+          'https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg',
+      'featured': true,
+    },
+    {
+      'name': 'Stone Plant',
+      'price': 16.00,
+      'originalPrice': 30.00,
+      'image':
+          'https://images.pexels.com/photos/5699661/pexels-photo-5699661.jpeg',
+      'featured': false,
+    },
+    {
+      'name': 'Xiaomi Mi Airdots',
+      'price': 30.00,
+      'originalPrice': 50.00,
+      'image':
+          'https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg',
+      'featured': false,
+    },
+  ];
+
+  final List<Map<String, dynamic>> topProducts = [
+    {
+      'name': 'Scent Tray',
+      'price': 68.00,
+      'description':
+          'Features an elegant black dish to capture the falling ash that captures the',
+      'image':
+          'https://images.pexels.com/photos/4790082/pexels-photo-4790082.jpeg',
+    },
+    {
+      'name': 'Fidget Spinner',
+      'price': 10.00,
+      'description': 'A classic stress reliever for all ages.',
+      'image':
+          'https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg',
+    },
+    {
+      'name': 'Scent Tray',
+      'price': 68.00,
+      'description':
+          'Features an elegant black dish to capture the falling ash that captures the',
+      'image':
+          'https://images.pexels.com/photos/5699661/pexels-photo-5699661.jpeg',
+    },
   ];
 
   @override
@@ -147,7 +153,10 @@ final List<Map<String, dynamic>> topProducts = [
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color.fromARGB(255, 85, 101, 251),Color.fromARGB(255, 107, 166, 248)],
+            colors: [
+              Color.fromARGB(255, 85, 101, 251),
+              Color.fromARGB(255, 107, 166, 248),
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -163,7 +172,8 @@ final List<Map<String, dynamic>> topProducts = [
                     ? [
                         // Categories
                         const SizedBox(
-                            height: 16.0), // Add spacing after app bar
+                          height: 16.0,
+                        ), // Add spacing after app bar
                         SizedBox(
                           height:
                               90, // Increased height to accommodate text and icon
@@ -221,21 +231,24 @@ final List<Map<String, dynamic>> topProducts = [
 
                         // Top Products in March
                         const Text(
-                    'Top Products in March',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 12.0),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: topProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = topProducts[index];
-                      return TopProductCard(index: index + 1, product: product);
+                          'Top Products in March',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 12.0),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: topProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = topProducts[index];
+                            return TopProductCard(
+                              index: index + 1,
+                              product: product,
+                            );
                           },
                         ),
                       ]
@@ -245,8 +258,8 @@ final List<Map<String, dynamic>> topProducts = [
                         _filteredProducts.isEmpty
                             ? const Center(
                                 child: Text(
-                                'No products found',
-                                style: TextStyle(color: Colors.white),
+                                  'No products found',
+                                  style: TextStyle(color: Colors.white),
                                 ),
                               )
                             : ListView.builder(
@@ -255,47 +268,55 @@ final List<Map<String, dynamic>> topProducts = [
                                 itemCount: _filteredProducts.length,
                                 itemBuilder: (context, index) {
                                   final product = _filteredProducts[index];
-                                  return Card(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    margin:
-                                        const EdgeInsets.only(bottom: 12.0),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Row(
-                                        children: [
-                                          // You can add an image here if your product data has one
-                                          // ClipRRect(
-                                          //   borderRadius: BorderRadius.circular(8),
-                                          //   child: Image.network(product['image'] ?? 'https://via.placeholder.com/50', height: 50, width: 50, fit: BoxFit.cover),
-                                          // ),
-                                          // const SizedBox(width: 12.0),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  product['name'],
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16,
+                                  return InkWell(
+                                    onTap: () {
+                                      context.go(
+                                        '/productDetail',
+                                        extra: product,
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(
+                                      12,
+                                    ), // ripple effect matches card shape
+                                    child: Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      margin: const EdgeInsets.only(
+                                        bottom: 12.0,
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    product['name'],
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                    ),
                                                   ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  'USD ${product['price'].toStringAsFixed(2)}',
-                                                  style: const TextStyle(
-                                                    color: Colors.green,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    'USD ${product['price'].toStringAsFixed(2)}',
+                                                    style: const TextStyle(
+                                                      color: Colors.green,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   );
@@ -378,15 +399,15 @@ class BulkDiscountProductCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-  child: Image.network(
-    product['image'] ??
-        'https://via.placeholder.com/150', // Fallback placeholder
-    height: 100,
-    width: double.infinity,
-    fit: BoxFit.cover,
-  ),
-),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: Image.network(
+              product['image'] ??
+                  'https://via.placeholder.com/150', // Fallback placeholder
+              height: 100,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
 
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -482,15 +503,15 @@ class TopProductCard extends StatelessWidget {
             ),
             const SizedBox(width: 12.0),
             ClipRRect(
-  borderRadius: BorderRadius.circular(8),
-  child: Image.network(
-    product['image'] ??
-        'https://via.placeholder.com/150', // Fallback placeholder
-    height: 80,
-    width: 80,
-    fit: BoxFit.cover,
-  ),
-),
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                product['image'] ??
+                    'https://via.placeholder.com/150', // Fallback placeholder
+                height: 80,
+                width: 80,
+                fit: BoxFit.cover,
+              ),
+            ),
 
             const SizedBox(width: 12.0),
             Expanded(
