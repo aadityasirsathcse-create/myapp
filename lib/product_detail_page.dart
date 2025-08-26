@@ -15,7 +15,7 @@ class ProductDetailPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.clear),
             onPressed: () {
-              context.go('/'); // Navigate back to the home page
+              context.go('/home'); // Navigate back to the home page
             },
           ),
         ],
