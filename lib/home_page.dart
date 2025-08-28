@@ -8,13 +8,6 @@ import 'package:myapp/product_service.dart'; // Product + ProductService
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
-  final List<String> promoImages = const [
-    "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c", // fashion
-    "https://images.unsplash.com/photo-1503602642458-232111445657", // shoes
-    "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f", // electronics
-    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e", // headphones
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,8 +80,8 @@ class HomePage extends StatelessWidget {
           children: <Widget>[
             const DrawerHeader(
               decoration: BoxDecoration(
-gradient: LinearGradient(
-            colors: [Color(0xFF5B74FF), Color(0xFF2DE6AF)],
+                gradient: LinearGradient(
+                  colors: [Color(0xFF5B74FF), Color(0xFF2DE6AF)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -153,27 +146,69 @@ gradient: LinearGradient(
             /// Promo Carousel
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: CarouselSlider(
-                options: CarouselOptions(
-                  height: 180.0,
-                  autoPlay: true,
-                  enlargeCenterPage: true,
-                  aspectRatio: 16 / 9,
-                  autoPlayCurve: Curves.fastOutSlowIn,
-                  enableInfiniteScroll: true,
-                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                  viewportFraction: 0.8,
-                ),
-                items: promoImages.map((url) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(
-                      url,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
-                  );
-                }).toList(),
+              child: FutureBuilder<List<String>>(
+                future: ProductService()
+                    .fetchPromotionImages(), // Fetch images from the service
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    ); // Show a loading indicator
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Error loading promo images: ${snapshot.error}',
+                      ),
+                    ); // Show an error message
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text('No promo images found.'),
+                    ); // Show a message if no images are available
+                  } else {
+                    final promoImages = snapshot.data!;
+                    return CarouselSlider(
+                      options: CarouselOptions(
+                        height: 180.0,
+                        autoPlay: true,
+                        enlargeCenterPage: true,
+                        aspectRatio: 16 / 9,
+                        autoPlayCurve: Curves.fastOutSlowIn,
+                        enableInfiniteScroll: true,
+                        autoPlayAnimationDuration: const Duration(
+                          milliseconds: 800,
+                        ),
+                        viewportFraction: 0.8,
+                      ),
+                      items: promoImages.map((url) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: LayoutBuilder(
+                            builder:
+                                (
+                                  BuildContext context,
+                                  BoxConstraints constraints,
+                                ) {
+                                  return Image.network(
+                                    url,
+                                    fit: BoxFit.cover,
+                                    width: constraints
+                                        .maxWidth, // Ensure image takes available width
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Center(
+                                        child: Icon(
+                                          Icons.error,
+                                          color: Colors.red,
+                                        ),
+                                      ); // Show error icon
+                                    },
+                                  );
+                                },
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  }
+                },
               ),
             ),
 
@@ -279,7 +314,7 @@ class ProductCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       width: double.infinity,
                     ),
-                    ),
+                  ),
                 ],
               ),
             ),
@@ -288,7 +323,8 @@ class ProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text( // Changed from product.name to product.title
+                  Text(
+                    // Changed from product.name to product.title
                     product.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -299,7 +335,10 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4.0),
                   // Removed originalPrice, flashSale, and discount logic
-                  Text('\$${product.price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14.0, color: Colors.black),),
+                  Text(
+                    '\$${product.price.toStringAsFixed(2)}',
+                    style: const TextStyle(fontSize: 14.0, color: Colors.black),
+                  ),
                 ],
               ),
             ),

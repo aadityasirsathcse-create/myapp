@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
       // restart instead.
       // restart instead.
       routerConfig: _router,
-      title: 'Flutter Demo',
+      title: 'Shopping',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

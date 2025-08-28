@@ -1,160 +1,275 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:myapp/cart_service.dart';
+import 'product_service.dart';
+import 'cart_service.dart';
 
-class CartPage extends StatelessWidget {
+class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);
 
-  // Dummy data for suggested products
-  final List<Map<String, dynamic>> suggestedProducts = const [
-    {
-      'name': 'Stone Planter',
-      'price': 16.00,
-      'originalPrice': 30.00,
-      'image':'https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg', // Placeholder
-    },
-    {
-      'name': 'Xiaomi Mi Airdots',
-      'price': 30.00,
-      'originalPrice': 50.00,
-      'image':"https://images.pexels.com/photos/3394658/pexels-photo-3394658.jpeg",
-    },
-    {
-      "name": "Drone Camera",
-      'price': 99.00,
-      'originalPrice': 180.00,
-      'image':"https://images.pexels.com/photos/442587/pexels-photo-442587.jpeg", // Placeholder
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
+  final ProductService _productService = ProductService();
+  List<Product> suggestedProducts = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSuggestedProducts();
+  }
+
+  Future<void> _loadSuggestedProducts() async {
+    try {
+      final products = await _productService.loadProducts();
+      setState(() {
+        suggestedProducts = products.take(10).toList();
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Failed to load suggested products: $e");
+      setState(() => isLoading = false);
     }
-    // Add more dummy products as needed
-  ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-appBar: AppBar(
-  automaticallyImplyLeading: false, // disable default back button
-  title: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      IconButton(
-        icon: const Icon(
-          Icons.arrow_back,
-          size: 27, // 👈 increase arrow size (default is 24)
-        ),
-        onPressed: () {
-          context.go('/home');
-        },
-      ),
-      const Text(
-        'My Cart',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-        ),
-      ),
-    ],
-  ),
-  toolbarHeight: 70, // extra space for two rows
-),
+    final cartItems = CartService.instance.cartItems; // get dynamic cart items
 
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back, size: 27),
+              onPressed: () => context.push('/home'),
+            ),
+            const Text(
+              'My Cart',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ],
+        ),
+        toolbarHeight: 70,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 50),
-              // Empty Cart Image Placeholder
-              Image.asset(
-              'assets/images/illustration.png', // Placeholder image URL
-                height: 200,
-                width: 200,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 1),
-              const Text(
-                'Nothing of interest lately?',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Check out some great discounts below!',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 30),
-              const Divider(),
-              const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Suggested Products',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              if (cartItems.isEmpty) ...[
+                const SizedBox(height: 30),
+                Image.asset(
+                  'assets/images/illustration.png',
+                  height: 200,
+                  width: 200,
+                  fit: BoxFit.contain,
                 ),
-              ),
-              const SizedBox(height: 12),
-              // Suggested Products List Placeholder
-              SizedBox(
-                height: 200, // Adjust height as needed
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: suggestedProducts.length,
+                const SizedBox(height: 8),
+                const Text(
+                  'Nothing in your cart yet!',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Check out some great discounts below!',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+              ] else ...[
+                const SizedBox(height: 10),
+                ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: cartItems.length,
                   itemBuilder: (context, index) {
-                    final product = suggestedProducts[index];
-                    return Container(
-                      width: 150, // Adjust width as needed
-                      margin: const EdgeInsets.only(right: 12.0),
-                      color: Colors.grey[200], // Placeholder color
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.network(
-                            product['image'],
-                            height: 100,
-                            width: 100,
+                    final product = cartItems[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            product.image.isNotEmpty
+                                ? product.image
+                                : 'https://via.placeholder.com/150',
+                            width: 60,
+                            height: 60,
                             fit: BoxFit.cover,
                           ),
-                          Text(product['name']),
-                          Text('\$${product['price']}'),
-                        ],
+                        ),
+                        title: Text(
+                          product.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text("\$${product.price.toStringAsFixed(2)}"),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              CartService.instance.removeFromCart(product);
+                            });
+                          },
+                        ),
                       ),
                     );
                   },
                 ),
+              ],
+              const Divider(height: 40),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Suggested Products',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 225,
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: suggestedProducts.length,
+                        itemBuilder: (context, index) {
+                          final product = suggestedProducts[index];
+                          return Container(
+                            width: 160,
+                            margin: const EdgeInsets.only(right: 12.0),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    product.image.isNotEmpty
+                                        ? product.image
+                                        : 'https://via.placeholder.com/150',
+                                    height: 120,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                  ),
+                                  child: Text(
+                                    product.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "\$${product.price.toStringAsFixed(2)}",
+                                  style: const TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                // Add to cart button
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      CartService.instance.addToCart(product);
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Added to cart!"),
+                                        duration: Duration(seconds: 1),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFFFFA726),
+                                          Color(0xFFFF7043),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        "Add to Cart",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
               ),
               const SizedBox(height: 30),
-              // Discover more products button with styling from login button
               ElevatedButton(
-                onPressed: () {
-                  context.go('/home');
-                },
+                onPressed: () => context.go('/home'),
                 style: ElevatedButton.styleFrom(
-                 padding: const EdgeInsets.all(6.0), // Set padding to zero
+                  padding: const EdgeInsets.all(6.0),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(13), // Match login button gradient border radius
+                    borderRadius: BorderRadius.circular(13),
                   ),
-                  backgroundColor: Colors.transparent, // Make button transparent
-                  shadowColor: Colors.transparent, // Remove shadow
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
                 ),
                 child: Ink(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF5B74FF), Color(0xFF2DE6AF)], // Match login button gradient colors
+                      colors: [Color(0xFF5B74FF), Color(0xFF2DE6AF)],
                       begin: Alignment.topLeft,
-                      end: Alignment.bottomRight, // Match login button gradient alignment
+                      end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(13), // Match login button gradient border radius
+                    borderRadius: BorderRadius.circular(13),
                   ),
                   child: Container(
                     alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 13), // Match login button padding
-                   width: double.infinity, // Match login button width
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 13,
+                    ),
+                    width: double.infinity,
                     child: const Text(
                       'Discover more Products',
-                      style: TextStyle(
-                        fontSize: 18, // Match login button font size
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart'; // Assuming you want to use go_router for navigation
 
 import 'package:myapp/home_page.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -213,9 +214,12 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: Container(
                       alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 120, vertical: 13,),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 120,
+                        vertical: 13,
+                      ),
                       width: double.infinity,
-                      
+
                       child: _isLoading
                           ? const SizedBox(
                               height: 24,

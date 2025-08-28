@@ -1,6 +1,7 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'product_service.dart'; // Your Product + ProductService
+import 'product_service.dart';
 
 enum SearchState { initial, searching, results }
 
@@ -15,26 +16,32 @@ class _SearchPageState extends State<SearchPage> {
   final ProductService _productService = ProductService();
   List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
-  List<String> categories = [
-    "All",
-    "Electronics",
-    "Fashion",
-    "Footwear",
-    "Accessories",
-    "Home & Garden",
-    "Sports & Fitness",
-    "Beauty",
-    "Musical Instruments",
-    "Home Appliances",
-  ];
+  List<String> categories = ["All"];
+  List<String> brands = ["All"];
 
   String _selectedCategory = "All";
+  String _selectedBrand = "All";
+  double _minPrice = 0;
+  double _maxPrice = 1000;
+  double _minRating = 0;
+  double _minDiscount = 0;
+
   SearchState _currentState = SearchState.initial;
 
   @override
   void initState() {
     super.initState();
     _loadProducts();
+    _loadFilters();
+  }
+
+  Future<void> _loadFilters() async {
+    final fetchedCategories = await _productService.fetchCategories();
+    final fetchedBrands = await _productService.fetchBrands();
+    setState(() {
+      categories = ["All", ...fetchedCategories];
+      brands = ["All", ...fetchedBrands];
+    });
   }
 
   Future<void> _loadProducts() async {
@@ -45,10 +52,140 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  void _onSearchTap() {
+  void _applyFilters({String query = ""}) {
+    final lowerQuery = query.toLowerCase();
     setState(() {
-      _currentState = SearchState.searching;
+      _currentState = SearchState.results;
+      _filteredProducts = _allProducts.where((p) {
+        final matchesQuery =
+            query.isEmpty || p.title.toLowerCase().contains(lowerQuery);
+        final matchesCategory =
+            _selectedCategory == "All" ||
+            p.category.toLowerCase() == _selectedCategory.toLowerCase();
+        final matchesBrand =
+            _selectedBrand == "All" ||
+            p.brand.toLowerCase() == _selectedBrand.toLowerCase();
+        final matchesPrice = p.price >= _minPrice && p.price <= _maxPrice;
+        final matchesRating = p.rating >= _minRating;
+        final matchesDiscount = p.discountPercentage >= _minDiscount;
+        return matchesQuery &&
+            matchesCategory &&
+            matchesBrand &&
+            matchesPrice &&
+            matchesRating &&
+            matchesDiscount;
+      }).toList();
     });
+  }
+
+  void _onSearchChanged(String query) {
+    _applyFilters(query: query);
+  }
+
+  void _openFilterModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: MediaQuery.of(context).viewInsets,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Filters",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _selectedCategory,
+                        items: categories
+                            .map(
+                              (c) => DropdownMenuItem(value: c, child: Text(c)),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          setModalState(() => _selectedCategory = val ?? "All");
+                        },
+                        decoration: const InputDecoration(
+                          labelText: "Category",
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _selectedBrand,
+                        items: brands
+                            .map(
+                              (b) => DropdownMenuItem(value: b, child: Text(b)),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          setModalState(() => _selectedBrand = val ?? "All");
+                        },
+                        decoration: const InputDecoration(labelText: "Brand"),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Price Range (\$${_minPrice.toInt()} - \$${_maxPrice.toInt()})",
+                      ),
+                      RangeSlider(
+                        min: 0,
+                        max: 5000,
+                        divisions: 100,
+                        values: RangeValues(_minPrice, _maxPrice),
+                        onChanged: (range) {
+                          setModalState(() {
+                            _minPrice = range.start;
+                            _maxPrice = range.end;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      Text("Minimum Rating (${_minRating.toStringAsFixed(1)})"),
+                      Slider(
+                        min: 0,
+                        max: 5,
+                        divisions: 10,
+                        value: _minRating,
+                        onChanged: (val) =>
+                            setModalState(() => _minRating = val),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Minimum Discount (${_minDiscount.toStringAsFixed(0)}%)",
+                      ),
+                      Slider(
+                        min: 0,
+                        max: 100,
+                        divisions: 20,
+                        value: _minDiscount,
+                        onChanged: (val) =>
+                            setModalState(() => _minDiscount = val),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          _applyFilters();
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Apply Filters"),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _onBackTap() {
@@ -63,54 +200,10 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  void _filterSearch(String query) {
+  void _onSearchTap() {
     setState(() {
-      if (query.isNotEmpty) {
-        _currentState = SearchState.results;
-        _filteredProducts = _allProducts.where((p) {
-          final matchesQuery = p.title.toLowerCase().contains(
-            query.toLowerCase(),
-          );
-          final matchesCategory =
-              _selectedCategory == "All" ||
-              p.category.toLowerCase() == _selectedCategory.toLowerCase();
-          return matchesQuery && matchesCategory;
-        }).toList();
-      } else {
-        // ✅ Show products filtered by category when no query
-        _currentState = SearchState.results;
-        _filteredProducts = _allProducts.where((p) {
-          return _selectedCategory == "All" ||
-              p.category.toLowerCase() == _selectedCategory.toLowerCase();
-        }).toList();
-      }
+      _currentState = SearchState.searching;
     });
-  }
-
-  void _openCategoryFilter() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return ListView(
-          shrinkWrap: true,
-          children: categories.map((category) {
-            return ListTile(
-              title: Text(category),
-              trailing: _selectedCategory == category
-                  ? const Icon(Icons.check, color: Colors.blue)
-                  : null,
-              onTap: () {
-                setState(() {
-                  _selectedCategory = category;
-                });
-                _filterSearch(""); // ✅ reapply with current filter
-                Navigator.pop(context);
-              },
-            );
-          }).toList(),
-        );
-      },
-    );
   }
 
   @override
@@ -139,7 +232,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
           child: TextField(
             onTap: _onSearchTap,
-            onChanged: _filterSearch,
+            onChanged: _onSearchChanged,
             decoration: const InputDecoration(
               hintText: "Search for a Product",
               border: InputBorder.none,
@@ -153,23 +246,21 @@ class _SearchPageState extends State<SearchPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list, color: Colors.white),
-            onPressed: _openCategoryFilter,
+            onPressed: _openFilterModal,
           ),
         ],
       ),
       body: Builder(
         builder: (context) {
-          if (_allProducts.isEmpty) {
+          if (_allProducts.isEmpty)
             return const Center(child: CircularProgressIndicator());
-          } else {
-            switch (_currentState) {
-              case SearchState.initial:
-                return _buildInitialState();
-              case SearchState.searching:
-                return _buildSearchingState();
-              case SearchState.results:
-                return _buildResultsState();
-            }
+          switch (_currentState) {
+            case SearchState.initial:
+              return _buildInitialState();
+            case SearchState.searching:
+              return _buildSearchingState();
+            case SearchState.results:
+              return _buildResultsState();
           }
         },
       ),
@@ -194,7 +285,7 @@ class _SearchPageState extends State<SearchPage> {
                       setState(() {
                         _selectedCategory = cat;
                       });
-                      _filterSearch("");
+                      _applyFilters();
                     },
                   ),
                 );
@@ -265,7 +356,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
                 InkWell(
-                  onTap: _openCategoryFilter,
+                  onTap: _openFilterModal,
                   child: Row(
                     children: [
                       const Icon(Icons.filter_list),
@@ -289,9 +380,7 @@ class _SearchPageState extends State<SearchPage> {
             delegate: SliverChildBuilderDelegate((context, index) {
               final product = _filteredProducts[index];
               return GestureDetector(
-                onTap: () {
-                  context.push('/productDetail', extra: product);
-                },
+                onTap: () => context.push('/productDetail', extra: product),
                 child: _buildProductCard(product),
               );
             }, childCount: _filteredProducts.length),
@@ -358,12 +447,17 @@ class _SearchPageState extends State<SearchPage> {
                       5,
                       (index) => Icon(
                         Icons.star,
-                        color: index < 4 ? Colors.amber : Colors.grey[300],
+                        color: index < product.rating.round()
+                            ? Colors.amber
+                            : Colors.grey[300],
                         size: 16,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Text("(38)", style: TextStyle(fontSize: 12)),
+                    Text(
+                      "(${product.rating.toStringAsFixed(1)})",
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ],
                 ),
               ],
