@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'product_service.dart';
+import 'product_service.dart'; // Your Product + ProductService
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
