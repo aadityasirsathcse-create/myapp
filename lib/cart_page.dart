@@ -63,14 +63,14 @@ class _CartPageState extends State<CartPage> {
           child: Column(
             children: [
               if (cartItems.isEmpty) ...[
-                const SizedBox(height: 30),
+                const SizedBox(height: 25),
                 Image.asset(
                   'assets/images/illustration.png',
                   height: 200,
                   width: 200,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 1),
                 const Text(
                   'Nothing in your cart yet!',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
