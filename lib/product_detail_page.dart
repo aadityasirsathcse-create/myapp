@@ -10,8 +10,8 @@ class ProductDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(product.name),
+      appBar: AppBar( // Use product.title for AppBar title
+        title: Text(product.title),
         actions: [
           IconButton(
             icon: const Icon(Icons.clear),
@@ -26,10 +26,10 @@ class ProductDetailPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Product image
-            ClipRRect(
+ ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                product.image.isNotEmpty
+              child: Image.network( // Use product.image for the image URL
+ product.image.isNotEmpty
                     ? product.image
                     : 'https://via.placeholder.com/250', // fallback placeholder
                 height: 250,
@@ -38,25 +38,18 @@ class ProductDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              product.name,
+ product.title, // Use product.title for product name
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             Text(
               "\$${product.price.toStringAsFixed(2)}",
               style: const TextStyle(fontSize: 18),
             ),
-            if (product.originalPrice != null) // show discount price
-              Text(
-                "Was \$${product.originalPrice!.toStringAsFixed(2)}",
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  decoration: TextDecoration.lineThrough,
-                ),
-              ),
+            // Removed originalPrice as it's not available from the API
+            const SizedBox(height: 16), // Added some spacing
             Text(
               product.description,
-              style: const TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 16), // Adjusted font size slightly for description
             ),
           ],
         ),

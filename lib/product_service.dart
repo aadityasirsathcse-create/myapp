@@ -1,38 +1,31 @@
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
 
 class Product {
-  final String name;
+  final int id;
+  final String title;
   final double price;
-  final double? originalPrice;
   final String image;
-  final bool? flashSale;
-  final bool? discount;
   final String category;
-  final String description; // ✅ non-nullable
+  final String description;
+  // The FakeStoreAPI also includes a 'rating' field, but we're not using it in this model for now.
 
   Product({
-    required this.name,
+    required this.id,
+    required this.title,
     required this.price,
-    this.originalPrice,
     required this.image,
-    this.flashSale,
-    this.discount,
     required this.category,
-    required this.description, // ✅ required
+    required this.description,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      name: json['name'] ?? '',
-      price: (json['price'] ?? 0).toDouble(),
-      originalPrice: json['originalPrice'] != null
-          ? (json['originalPrice']).toDouble()
-          : null,
-      image: json['image'] ?? '',
-      flashSale: json['flashSale'],
-      discount: json['discount'],
-      category: json['category'] ?? 'Uncategorized',
+      id: json['id'] as int,
+      title: json['title'] as String,
+      price: (json['price'] as num).toDouble(), // API returns num, convert to double
+      image: json['image'] as String,
+      category: json['category'] as String,
       description: json['description'],
     );
   }
@@ -40,9 +33,13 @@ class Product {
 
 class ProductService {
   Future<List<Product>> loadProducts() async {
-    final String response = await rootBundle.loadString('assets/products.json');
-    final List<dynamic> data = json.decode(response);
+    final response = await http.get(Uri.parse('https://fakestoreapi.com/products'));
 
-    return data.map((json) => Product.fromJson(json)).toList();
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Product.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load products from API: ${response.statusCode}');
+    }
   }
 }

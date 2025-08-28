@@ -15,18 +15,18 @@ class _SearchPageState extends State<SearchPage> {
   final ProductService _productService = ProductService();
   List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
-List<String> categories = [
-  "All",
-  "Electronics",
-  "Fashion",
-  "Footwear",
-  "Accessories",
-  "Home & Garden",
-  "Sports & Fitness",
-  "Beauty",
-  "Musical Instruments",
-  "Home Appliances",
-];
+  List<String> categories = [
+    "All",
+    "Electronics",
+    "Fashion",
+    "Footwear",
+    "Accessories",
+    "Home & Garden",
+    "Sports & Fitness",
+    "Beauty",
+    "Musical Instruments",
+    "Home Appliances",
+  ];
 
   String _selectedCategory = "All";
   SearchState _currentState = SearchState.initial;
@@ -68,7 +68,7 @@ List<String> categories = [
       if (query.isNotEmpty) {
         _currentState = SearchState.results;
         _filteredProducts = _allProducts.where((p) {
-          final matchesQuery = p.name.toLowerCase().contains(
+          final matchesQuery = p.title.toLowerCase().contains(
             query.toLowerCase(),
           );
           final matchesCategory =
@@ -115,22 +115,22 @@ List<String> categories = [
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      toolbarHeight: 105,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: _onBackTap,
-      ),
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF5B74FF), Color(0xFF2DE6AF)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 105,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: _onBackTap,
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF5B74FF), Color(0xFF2DE6AF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
         ),
-      ),
         title: Container(
           height: 45,
           decoration: BoxDecoration(
@@ -334,7 +334,7 @@ List<String> categories = [
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  product.name,
+                  product.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(

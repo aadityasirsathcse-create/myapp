@@ -279,18 +279,6 @@ class ProductCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       width: double.infinity,
                     ),
-                  ),
-                  if (product.flashSale == true)
-                    Positioned(
-                      top: 8.0,
-                      left: 8.0,
-                      child: _buildBadge("Flash Sale", Colors.red),
-                    ),
-                  if (product.discount == true && product.flashSale != true)
-                    Positioned(
-                      top: 8.0,
-                      right: 8.0,
-                      child: _buildBadge("-10%", Colors.green),
                     ),
                 ],
               ),
@@ -300,8 +288,8 @@ class ProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    product.name,
+                  Text( // Changed from product.name to product.title
+                    product.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -310,19 +298,8 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4.0),
-                  if (product.originalPrice != null)
-                    Text(
-                      "\$${product.originalPrice}",
-                      style: const TextStyle(
-                        fontSize: 12.0,
-                        color: Colors.grey,
-                        decoration: TextDecoration.lineThrough,
-                      ),
-                    ),
-                  Text(
-                    "\$${product.price.toStringAsFixed(2)}",
-                    style: const TextStyle(fontSize: 14.0, color: Colors.black),
-                  ),
+                  // Removed originalPrice, flashSale, and discount logic
+                  Text('\$${product.price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14.0, color: Colors.black),),
                 ],
               ),
             ),
