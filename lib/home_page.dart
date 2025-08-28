@@ -72,7 +72,7 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 onPressed: () {
-                  context.go('/cart');
+                  context.push('/cart');
                 },
               ),
             ],
@@ -87,11 +87,8 @@ class HomePage extends StatelessWidget {
           children: <Widget>[
             const DrawerHeader(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color.fromARGB(255, 85, 101, 251),
-                    Color.fromARGB(255, 107, 166, 248),
-                  ],
+gradient: LinearGradient(
+            colors: [Color(0xFF5B74FF), Color(0xFF2DE6AF)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -232,7 +229,7 @@ class HomePage extends StatelessWidget {
         height: 150,
         child: RawMaterialButton(
           onPressed: () {
-            context.go('/search');
+            context.push('/search');
           },
           elevation: 0,
           fillColor: Colors.transparent,
@@ -260,7 +257,7 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        context.go('/productDetail', extra: product);
+        context.push('/productDetail', extra: product);
       },
       child: Card(
         elevation: 2.0,

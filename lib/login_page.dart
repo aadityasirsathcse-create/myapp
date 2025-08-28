@@ -29,10 +29,6 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         // Check if the widget is still in the widget tree
         context.go('/home'); // Replace '/' with your desired route after login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
       }
     } on FirebaseAuthException catch (e) {
       // Handle different authentication errors
