@@ -91,36 +91,43 @@ class _CartPageState extends State<CartPage> {
                   itemCount: cartItems.length,
                   itemBuilder: (context, index) {
                     final product = cartItems[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            product.image.isNotEmpty
-                                ? product.image
-                                : 'https://via.placeholder.com/150',
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
+                    return InkWell(
+                      onTap: () {
+                        context.push('/productDetail', extra: product);
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              product.image.isNotEmpty
+                                  ? product.image
+                                  : 'https://via.placeholder.com/150',
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ),
-                        title: Text(
-                          product.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text("\$${product.price.toStringAsFixed(2)}"),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            setState(() {
-                              CartService.instance.removeFromCart(product);
-                            });
-                          },
+                          title: Text(
+                            product.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            "\$${product.price.toStringAsFixed(2)}",
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              setState(() {
+                                CartService.instance.removeFromCart(product);
+                              });
+                            },
+                          ),
                         ),
                       ),
                     );
@@ -139,6 +146,7 @@ class _CartPageState extends State<CartPage> {
                 ),
               ),
               const SizedBox(height: 12),
+              // Locate this section in lib/cart_page.dart
               SizedBox(
                 height: 225,
                 child: isLoading
@@ -148,115 +156,130 @@ class _CartPageState extends State<CartPage> {
                         itemCount: suggestedProducts.length,
                         itemBuilder: (context, index) {
                           final product = suggestedProducts[index];
-                          return Container(
-                            width: 160,
-                            margin: const EdgeInsets.only(right: 12.0),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(
-                                    product.image.isNotEmpty
-                                        ? product.image
-                                        : 'https://via.placeholder.com/150',
-                                    height: 120,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                  ),
-                                  child: Text(
-                                    product.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                          // Wrap the Container with InkWell like this:
+                          return InkWell(
+                            // Add this InkWell
+                            onTap: () {
+                              // Add this onTap callback
+                              context.push(
+                                '/productDetail',
+                                extra: product,
+                              ); // Add this navigation
+                            }, // Close onTap
+                            child: Container(
+                              // This Container is already there
+                              width: 160,
+                              margin: const EdgeInsets.only(right: 12.0),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      product.image.isNotEmpty
+                                          ? product.image
+                                          : 'https://via.placeholder.com/150',
+                                      height: 120,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
                                     ),
-                                    textAlign: TextAlign.center,
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "\$${product.price.toStringAsFixed(2)}",
-                                  style: const TextStyle(
-                                    color: Colors.blue,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                // Add to cart button
-                                InkWell(
-                                  onTap: () {
-                                    if (CartService.instance.isInCart(
-                                      product,
-                                    )) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            "Product already in cart!",
-                                          ),
-                                          duration: Duration(seconds: 1),
-                                        ),
-                                      );
-                                    } else {
-                                      setState(() {
-                                        CartService.instance.addToCart(product);
-                                      });
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text("Added to cart!"),
-                                          duration: Duration(seconds: 1),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
+                                  const SizedBox(height: 8),
+                                  Padding(
                                     padding: const EdgeInsets.symmetric(
-                                      vertical: 8,
+                                      horizontal: 6,
                                     ),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xFFFFA726),
-                                          Color(0xFFFF7043),
-                                        ],
+                                    child: Text(
+                                      product.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
                                       ),
-                                      borderRadius: BorderRadius.circular(12),
+                                      textAlign: TextAlign.center,
                                     ),
-                                    child: const Center(
-                                      child: Text(
-                                        "Add to Cart",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "\$${product.price.toStringAsFixed(2)}",
+                                    style: const TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  // Add to cart button (already has an InkWell)
+                                  InkWell(
+                                    onTap: () {
+                                      if (CartService.instance.isInCart(
+                                        product,
+                                      )) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Product already in cart!",
+                                            ),
+                                            duration: Duration(seconds: 1),
+                                          ),
+                                        );
+                                      } else {
+                                        setState(() {
+                                          CartService.instance.addToCart(
+                                            product,
+                                          );
+                                        });
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text("Added to cart!"),
+                                            duration: Duration(seconds: 1),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Color(0xFFFFA726),
+                                            Color(0xFFFF7043),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Center(
+                                        child: Text(
+                                          "Add to Cart",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
+                                ],
+                              ),
+                            ), // Close the Container
+                          ); // Close the new InkWell
                         },
                       ),
               ),
+
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () => context.go('/home'),
