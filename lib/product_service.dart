@@ -45,36 +45,39 @@ class Product {
 class ProductService {
   final String baseUrl = 'https://dummyjson.com/products';
 
-  /// Load all products
-  Future<List<Product>> loadProducts() async {
-    final response = await http.get(Uri.parse('$baseUrl?limit=0')); // fetch all
+  List<Product>? _cachedProducts;
+  List<String>? _cachedCategories;
+  List<String>? _cachedBrands;
 
+  Future<List<Product>> loadProducts({bool forceRefresh = false}) async {
+    if (_cachedProducts != null && !forceRefresh) {
+      return _cachedProducts!;
+    }
+
+    final response = await http.get(Uri.parse('$baseUrl?limit=0')); // fetch all
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> productsJson = data['products'];
-      final products = productsJson
+
+      _cachedProducts = productsJson
           .map((json) => Product.fromJson(json))
           .toList();
 
-      // Shuffle for randomness
-      products.shuffle(Random());
-      return products;
+      _cachedProducts!.shuffle(Random());
+      return _cachedProducts!;
     } else {
-      throw Exception(
-        'Failed to load products from API: ${response.statusCode}',
-      );
+      throw Exception('Failed to load products: ${response.statusCode}');
     }
   }
 
-  /// Search products
   Future<List<Product>> searchProducts({
     required String query,
     String? category,
   }) async {
-    final allProducts = await loadProducts();
+    final products = await loadProducts();
     final lowerQuery = query.toLowerCase();
 
-    return allProducts.where((product) {
+    return products.where((product) {
       final matchesQuery = product.title.toLowerCase().contains(lowerQuery);
       final matchesCategory = category == null || category == 'All'
           ? true
@@ -83,9 +86,8 @@ class ProductService {
     }).toList();
   }
 
-  /// Fetch promotion images
   Future<List<String>> fetchPromotionImages() async {
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(milliseconds: 300));
     return List.generate(
       4,
       (_) =>
@@ -93,24 +95,29 @@ class ProductService {
     );
   }
 
-  /// Fetch product categories
-  Future<List<String>> fetchCategories() async {
-    final response = await http.get(Uri.parse('$baseUrl/categories'));
+  Future<List<String>> fetchCategories({bool forceRefresh = false}) async {
+    if (_cachedCategories != null && !forceRefresh) {
+      return _cachedCategories!;
+    }
 
+    final response = await http.get(Uri.parse('$baseUrl/categories'));
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      return List<String>.from(data);
+      _cachedCategories = List<String>.from(data);
+      return _cachedCategories!;
     } else {
-      throw Exception(
-        'Failed to load categories from API: ${response.statusCode}',
-      );
+      throw Exception('Failed to load categories: ${response.statusCode}');
     }
   }
 
-  /// Fetch brands dynamically
-  Future<List<String>> fetchBrands() async {
+  Future<List<String>> fetchBrands({bool forceRefresh = false}) async {
+    if (_cachedBrands != null && !forceRefresh) {
+      return _cachedBrands!;
+    }
+
     final allProducts = await loadProducts();
     final brandsSet = allProducts.map((p) => p.brand).toSet();
-    return ["All", ...brandsSet];
+    _cachedBrands = ["All", ...brandsSet];
+    return _cachedBrands!;
   }
 }

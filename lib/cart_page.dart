@@ -197,15 +197,32 @@ class _CartPageState extends State<CartPage> {
                                 // Add to cart button
                                 InkWell(
                                   onTap: () {
-                                    setState(() {
-                                      CartService.instance.addToCart(product);
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Added to cart!"),
-                                        duration: Duration(seconds: 1),
-                                      ),
-                                    );
+                                    if (CartService.instance.isInCart(
+                                      product,
+                                    )) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "Product already in cart!",
+                                          ),
+                                          duration: Duration(seconds: 1),
+                                        ),
+                                      );
+                                    } else {
+                                      setState(() {
+                                        CartService.instance.addToCart(product);
+                                      });
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Added to cart!"),
+                                          duration: Duration(seconds: 1),
+                                        ),
+                                      );
+                                    }
                                   },
                                   child: Container(
                                     margin: const EdgeInsets.symmetric(

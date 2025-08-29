@@ -118,9 +118,12 @@ class HomePage extends StatelessWidget {
               leading: Icon(Icons.category),
               title: Text('Categories'),
             ),
-            const ListTile(
-              leading: Icon(Icons.favorite),
-              title: Text('Wishlist'),
+            ListTile(
+              leading: const Icon(Icons.favorite),
+              title: const Text('Wishlist'),
+              onTap: () {
+                context.push('/wishlist');
+              },
             ),
             const ListTile(
               leading: Icon(Icons.settings),
