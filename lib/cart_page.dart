@@ -17,14 +17,13 @@ class _CartPageState extends State<CartPage> {
   List<Product> suggestedProducts = [];
   bool isLoading = true;
   final user = FirebaseAuth.instance.currentUser;
-
-  // cart IDs are managed via StreamBuilder now
   final Set<String> _inCartIds = {};
 
   @override
   void initState() {
     super.initState();
     _loadSuggestedProducts();
+    _loadCartIds();
   }
 
   Future<void> _loadSuggestedProducts() async {
@@ -38,6 +37,20 @@ class _CartPageState extends State<CartPage> {
       debugPrint("Failed to load suggested products: $e");
       setState(() => isLoading = false);
     }
+  }
+
+  /// Load cart IDs from Firestore for toggle state
+  Future<void> _loadCartIds() async {
+    if (user == null) return;
+    final snapshot = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(user!.uid)
+        .collection("cart")
+        .get();
+
+    setState(() {
+      _inCartIds.addAll(snapshot.docs.map((doc) => doc.id));
+    });
   }
 
   Future<void> _toggleCart(Product product) async {
@@ -54,18 +67,24 @@ class _CartPageState extends State<CartPage> {
         .collection("cart")
         .doc(product.id.toString());
 
-    final isInCart = _inCartIds.contains(product.id.toString());
+    setState(() {
+      if (_inCartIds.contains(product.id.toString())) {
+        _inCartIds.remove(product.id.toString());
+      } else {
+        _inCartIds.add(product.id.toString());
+      }
+    });
 
-    if (isInCart) {
-      await docRef.delete();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Removed from cart!")));
-    } else {
+    if (_inCartIds.contains(product.id.toString())) {
       await CartService.instance.addToCart(product);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Added to cart!")));
+    } else {
+      await docRef.delete();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Removed from cart!")));
     }
   }
 
@@ -106,11 +125,6 @@ class _CartPageState extends State<CartPage> {
                   }
 
                   final cartItems = snapshot.data ?? [];
-
-                  // keep _inCartIds updated from the stream
-                  _inCartIds
-                    ..clear()
-                    ..addAll(cartItems.map((p) => p.id.toString()));
 
                   if (cartItems.isEmpty) {
                     return Column(
@@ -219,8 +233,9 @@ class _CartPageState extends State<CartPage> {
                         itemCount: suggestedProducts.length,
                         itemBuilder: (context, index) {
                           final product = suggestedProducts[index];
-                          final inCart =
-                              _inCartIds.contains(product.id.toString());
+                          final inCart = _inCartIds.contains(
+                            product.id.toString(),
+                          );
 
                           return InkWell(
                             onTap: () {
@@ -273,10 +288,14 @@ class _CartPageState extends State<CartPage> {
                                   ),
                                   const SizedBox(height: 6),
 
-                                  /// 🔹 Add to Cart / Added in Cart button
+                                  /// 🔹 Add to Cart / View in Cart button
                                   InkWell(
                                     onTap: () async {
-                                      await _toggleCart(product);
+                                      if (inCart) {
+                                        //context.push('/cart');
+                                      } else {
+                                        await _toggleCart(product);
+                                      }
                                     },
                                     child: Container(
                                       margin: const EdgeInsets.symmetric(
@@ -286,11 +305,16 @@ class _CartPageState extends State<CartPage> {
                                         vertical: 8,
                                       ),
                                       decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            Color(0xFFFFA726),
-                                            Color(0xFFFF7043),
-                                          ],
+                                        gradient: LinearGradient(
+                                          colors: inCart
+                                              ? const [
+                                                  Color(0xFFFFA726),
+                                                  Color(0xFFFF7043),
+                                                ]
+                                              : const [
+                                                  Color(0xFFFFA726),
+                                                  Color(0xFFFF7043),
+                                                ],
                                         ),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
