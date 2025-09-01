@@ -1,37 +1,80 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'product_service.dart';
 
 class CartService {
   CartService._privateConstructor();
   static final CartService instance = CartService._privateConstructor();
 
-  final List<Product> _cartItems = [];
-  final List<Product> _wishlistItems = [];
+  final _firestore = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
 
-  List<Product> get cartItems => _cartItems;
+  String? get _userId => _auth.currentUser?.uid;
 
-  void addToCart(Product product) {
-    _cartItems.add(product);
+  /// -------------------- CART --------------------
+
+  Future<void> addToCart(Product product) async {
+  if (_userId == null) return;
+  await _firestore
+      .collection('users')
+      .doc(_userId)
+      .collection('cart')
+      .doc(product.id.toString()) // ✅ convert int to String
+      .set(product.toMap());
+}
+
+Future<void> removeFromCart(Product product) async {
+  if (_userId == null) return;
+  await _firestore
+      .collection('users')
+      .doc(_userId)
+      .collection('cart')
+      .doc(product.id.toString()) // ✅ convert int to String
+      .delete();
+}
+
+
+  Stream<List<Product>> getCartStream() {
+    if (_userId == null) return const Stream.empty();
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('cart')
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Product.fromMap(doc.data())).toList());
   }
 
-  bool isInCart(Product product) {
-    return _cartItems.contains(product);
+  /// -------------------- WISHLIST --------------------
+
+  Future<void> addToWishlist(Product product) async {
+    if (_userId == null) return;
+    await _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('wishlist')
+.doc(product.id.toString())
+        .set(product.toMap());
   }
 
-  void removeFromCart(Product product) {
-    _cartItems.remove(product);
+  Future<void> removeFromWishlist(Product product) async {
+    if (_userId == null) return;
+    await _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('wishlist')
+.doc(product.id.toString())
+        .delete();
   }
 
-  void clearCart() {
-    _cartItems.clear();
-  }
-
-  List<Product> get wishlistItems => _wishlistItems;
-
-  void addToWishlist(Product product) {
-    _wishlistItems.add(product);
-  }
-
-  void removeFromWishlist(Product product) {
-    _wishlistItems.remove(product);
+  Stream<List<Product>> getWishlistStream() {
+    if (_userId == null) return const Stream.empty();
+    return _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('wishlist')
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Product.fromMap(doc.data())).toList());
   }
 }
