@@ -1,12 +1,83 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:myapp/search_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:myapp/product_service.dart'; // Product + ProductService
 
-class HomePage extends StatelessWidget {
+// HomePage is now a StatefulWidget to manage state for infinite scrolling.
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final ProductService _productService = ProductService();
+  final List<Product> _products = [];
+  final ScrollController _scrollController = ScrollController();
+
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _currentPage = 0;
+  final int _pageSize = 10; // Number of products to fetch per page
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts(); // Initial product load
+
+    // Add a listener to the scroll controller to detect when the user reaches the end.
+    _scrollController.addListener(() {
+      // Check if we are at the bottom of the list and there are more products to load.
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 200 &&
+          !_isLoading) {
+        _loadProducts();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+        .dispose(); // Dispose the controller to prevent memory leaks
+    super.dispose();
+  }
+
+  /// Loads products paginated.
+  Future<void> _loadProducts() async {
+    if (_isLoading || !_hasMore)
+      return; // Don't load if already loading or no more products
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Fetch the next page of products.
+      final newProducts = await _productService.loadProducts(
+        limit: _pageSize,
+        skip: _currentPage * _pageSize,
+      );
+
+      setState(() {
+        if (newProducts.length < _pageSize) {
+          _hasMore = false; // No more products to load
+        }
+        _products.addAll(newProducts);
+        _currentPage++;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        // Optionally, show a snackbar or an error message
+      });
+      // Log or handle the error appropriately
+      print("Error loading products: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +127,7 @@ class HomePage extends StatelessWidget {
                           minHeight: 12,
                         ),
                         child: const Text(
-                          '8',
+                          '8', // This should be dynamic based on cart state
                           style: TextStyle(color: Colors.white, fontSize: 8),
                           textAlign: TextAlign.center,
                         ),
@@ -110,7 +181,7 @@ class HomePage extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Home'),
-              onTap: () async {
+              onTap: () {
                 context.go('/home');
               },
             ),
@@ -143,6 +214,7 @@ class HomePage extends StatelessWidget {
 
       /// ==== Body ====
       body: SingleChildScrollView(
+        controller: _scrollController, // Attach the scroll controller
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -150,7 +222,7 @@ class HomePage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: FutureBuilder<List<String>>(
-                future: ProductService()
+                future: _productService
                     .fetchPromotionImages(), // Fetch images from the service
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -185,27 +257,15 @@ class HomePage extends StatelessWidget {
                       items: promoImages.map((url) {
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
-                          child: LayoutBuilder(
-                            builder:
-                                (
-                                  BuildContext context,
-                                  BoxConstraints constraints,
-                                ) {
-                                  return Image.network(
-                                    url,
-                                    fit: BoxFit.cover,
-                                    width: constraints
-                                        .maxWidth, // Ensure image takes available width
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Center(
-                                        child: Icon(
-                                          Icons.error,
-                                          color: Colors.red,
-                                        ),
-                                      ); // Show error icon
-                                    },
-                                  );
-                                },
+                          child: Image.network(
+                            url,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Center(
+                                child: Icon(Icons.error, color: Colors.red),
+                              ); // Show error icon
+                            },
                           ),
                         );
                       }).toList(),
@@ -225,37 +285,40 @@ class HomePage extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: FutureBuilder<List<Product>>(
-                future: ProductService().loadProducts(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No products found.'));
-                  } else {
-                    final products = snapshot.data!;
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
-                            childAspectRatio: 0.75,
-                          ),
-                      itemCount: products.length,
-                      itemBuilder: (context, index) {
-                        final product = products[index];
-                        return ProductCard(product: product);
-                      },
-                    );
-                  }
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics:
+                    const NeverScrollableScrollPhysics(), // GridView should not scroll independently
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16.0,
+                  mainAxisSpacing: 16.0,
+                  childAspectRatio: 0.75,
+                ),
+                itemCount: _products.length,
+                itemBuilder: (context, index) {
+                  final product = _products[index];
+                  return ProductCard(product: product);
                 },
               ),
             ),
+
+            // Loading indicator at the bottom
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+
+            // Message when all products are loaded
+            if (!_hasMore)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: Text("You've reached the end of the list."),
+                ),
+              ),
+
             const SizedBox(height: 16.0),
           ],
         ),
@@ -304,21 +367,19 @@ class ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(8.0),
-                    ),
-                    child: Image.network(
-                      product.image.isNotEmpty
-                          ? product.image
-                          : "https://via.placeholder.com/150",
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
-                  ),
-                ],
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(8.0),
+                ),
+                child: Image.network(
+                  product.image.isNotEmpty
+                      ? product.image
+                      : "https://via.placeholder.com/150",
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Center(child: Icon(Icons.error, color: Colors.red)),
+                ),
               ),
             ),
             Padding(
@@ -327,7 +388,6 @@ class ProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    // Changed from product.name to product.title
                     product.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -337,7 +397,6 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4.0),
-                  // Removed originalPrice, flashSale, and discount logic
                   Text(
                     '\$${product.price.toStringAsFixed(2)}',
                     style: const TextStyle(fontSize: 14.0, color: Colors.black),
@@ -346,24 +405,6 @@ class ProductCard extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadge(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 10.0,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );
