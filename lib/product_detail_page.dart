@@ -4,9 +4,6 @@ import 'package:myapp/cart_service.dart';
 import 'package:myapp/product_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myapp/product_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
@@ -19,17 +16,23 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
   bool _isFavorite = false;
-  bool _isInCart = false;
   final user = FirebaseAuth.instance.currentUser;
+  Stream<DocumentSnapshot>? _cartStream;
 
   @override
   void initState() {
     super.initState();
     _checkIfFavorite();
-    _checkIfInCart();
+    if (user != null) {
+      _cartStream = FirebaseFirestore.instance
+          .collection("users")
+          .doc(user!.uid)
+          .collection("cart")
+          .doc(widget.product.id.toString())
+          .snapshots();
+    }
   }
 
-  /// 🔥 Check if product already in wishlist
   Future<void> _checkIfFavorite() async {
     if (user == null) return;
     final doc = await FirebaseFirestore.instance
@@ -38,23 +41,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         .collection("wishlist")
         .doc(widget.product.id.toString())
         .get();
-    setState(() => _isFavorite = doc.exists);
+    if (mounted) {
+      setState(() => _isFavorite = doc.exists);
+    }
   }
 
-  /// 🛒 Check if product is in cart
-  Future<void> _checkIfInCart() async {
-    if (user == null) return;
-    final doc = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(user!.uid)
-        .collection("cart")
-        .doc(widget.product.id.toString())
-        .get();
-    setState(() => _isInCart = doc.exists);
-  }
-
-  /// ❤️ Toggle favorite
   void _toggleFavorite() {
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please log in to use the wishlist.")),
+      );
+      return;
+    }
     setState(() {
       _isFavorite = !_isFavorite;
     });
@@ -65,57 +63,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
-  /// 🛒 Toggle cart state (instant update)
-  Future<void> _toggleCart() async {
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please log in to add items to cart.")),
-      );
-      return;
-    }
-
-    final docRef = FirebaseFirestore.instance
-        .collection("users")
-        .doc(user!.uid)
-        .collection("cart")
-        .doc(widget.product.id.toString());
-
-    setState(() {
-      _isInCart = !_isInCart; // instant UI update
-    });
-
-    if (_isInCart) {
-      await docRef.set({
-        "id": widget.product.id,
-        "title": widget.product.title,
-        "price": widget.product.price,
-        "image": widget.product.image,
-        "category": widget.product.category,
-        "description": widget.product.description,
-        "brand": widget.product.brand,
-        "rating": widget.product.rating,
-        "discountPercentage": widget.product.discountPercentage,
-        "quantity": 1,
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Added to cart!")));
-    } else {
-      await docRef.delete();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Removed from cart!")));
-    }
-  }
-
-  /// ⚡ Buy Now → Ensure in cart then go to cart
-  Future<void> _buyNow() async {
-    if (!_isInCart) {
-      await _toggleCart();
-    }
-    context.push('/cart');
-  }
-
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
@@ -124,7 +71,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       backgroundColor: const Color.fromARGB(255, 245, 247, 247),
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -137,12 +83,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
           ),
-
           SafeArea(
             child: Column(
               children: [
-                // 🔙 Back + ❤️ Wishlist button
-                // 🔙 Back + ❤️ Wishlist button
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
@@ -165,11 +108,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ],
                   ),
                 ),
-
-                // 🖼️ Product Image
-                // 🖼️ Product Image
                 Hero(
-                  tag: product.id,
+                  tag: 'product_${product.id}',
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: Image.network(
@@ -182,9 +122,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ),
                   ),
                 ),
-
-                // 📦 Product Info
-                // 📦 Product Info
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -198,7 +135,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Title
                         Text(
                           product.title,
                           style: const TextStyle(
@@ -206,11 +142,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 8),
-
-                        // Price + Discount
-                        // Price + Discount
                         Row(
                           children: [
                             Text(
@@ -242,11 +174,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ),
                           ],
                         ),
-
                         const SizedBox(height: 12),
-
-                        // ⭐ Rating stars
-                        // ⭐ Rating stars
                         Row(
                           children: List.generate(
                             5,
@@ -259,120 +187,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 16),
-
-                        // 📖 Description
-                        // 📖 Description
                         Text(
                           product.description,
                           style: const TextStyle(fontSize: 16, height: 1.4),
                         ),
-
                         const Spacer(),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFFFA726),
-                                      Color(0xFFFF7043),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(12),
-                                    onTap: () async {
-                                      if (_isInCart) {
-                                        // Already in cart → Go to cart
-                                        context.push('/cart');
-                                      } else {
-                                        // Optimistic update
-                                        setState(() => _isInCart = true);
-
-                                        await CartService.instance.addToCart(
-                                          product,
-                                        );
-
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text("Added to cart!"),
-                                          ),
-                                        );
-                                      }
-                                    },
-
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          _isInCart
-                                              ? "View in Cart"
-                                              : "Add to Cart",
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            // Buy Now
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF5B74FF),
-                                      Color(0xFF2DE6AF),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(12),
-                                    onTap: _buyNow,
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          "Buy Now",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        _buildActionButtons(),
                       ],
                     ),
                   ),
@@ -381,6 +202,154 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _cartStream,
+      builder: (context, snapshot) {
+        final bool isInCart = snapshot.hasData && snapshot.data!.exists;
+        final int quantity = isInCart ? snapshot.data!.get('quantity') : 0;
+
+        return Row(
+          children: [
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, animation) =>
+                    ScaleTransition(scale: animation, child: child),
+                child: isInCart
+                    ? _buildQuantityStepper(quantity)
+                    : _buildAddToCartButton(),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(child: _buildBuyNowButton(isInCart)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAddToCartButton() {
+    return Container(
+      key: const ValueKey('addToCart'),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFA726), Color(0xFFFF7043)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => CartService.instance.addToCart(widget.product),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: Text(
+                "Add to Cart",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuantityStepper(int quantity) {
+    return Container(
+      key: const ValueKey('quantityStepper'),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.remove, color: Colors.red),
+            onPressed: () {
+              if (quantity > 1) {
+                CartService.instance.updateCartItemQuantity(
+                  widget.product.id,
+                  quantity - 1,
+                );
+              } else {
+                CartService.instance.removeFromCart(widget.product);
+              }
+            },
+          ),
+          GestureDetector(
+            onTap: () => context.push('/cart'),
+            child: Text(
+              quantity.toString(),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline, // shows it's tappable
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add, color: Colors.green),
+            onPressed: () {
+              CartService.instance.updateCartItemQuantity(
+                widget.product.id,
+                quantity + 1,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBuyNowButton(bool isInCart) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF5B74FF), Color(0xFF2DE6AF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            if (!isInCart) {
+              CartService.instance.addToCart(widget.product);
+            }
+            context.push('/cart');
+          },
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: Text(
+                "Buy Now",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

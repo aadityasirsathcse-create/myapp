@@ -17,13 +17,11 @@ class _CartPageState extends State<CartPage> {
   List<Product> suggestedProducts = [];
   bool isLoading = true;
   final user = FirebaseAuth.instance.currentUser;
-  final Set<String> _inCartIds = {};
 
   @override
   void initState() {
     super.initState();
     _loadSuggestedProducts();
-    _loadCartIds();
   }
 
   Future<void> _loadSuggestedProducts() async {
@@ -39,53 +37,99 @@ class _CartPageState extends State<CartPage> {
     }
   }
 
-  /// Load cart IDs from Firestore for toggle state
-  Future<void> _loadCartIds() async {
-    if (user == null) return;
-    final snapshot = await FirebaseFirestore.instance
-        .collection("users")
-        .doc(user!.uid)
-        .collection("cart")
-        .get();
-
-    setState(() {
-      _inCartIds.addAll(snapshot.docs.map((doc) => doc.id));
-    });
+  // --- Quantity stepper used in Suggested Products ---
+  Widget _buildSuggestedQuantityStepper(Product product, int quantity) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.remove, color: Colors.red),
+            onPressed: () async {
+              if (user == null) return;
+              if (quantity > 1) {
+                await CartService.instance.updateCartItemQuantity(
+                  product.id,
+                  quantity - 1,
+                );
+              } else {
+                // quantity would go to 0 → remove from cart
+                await CartService.instance.removeFromCart(product);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Removed from cart")),
+                  );
+                }
+              }
+            },
+          ),
+          GestureDetector(
+            onTap: () => context.push('/cart'),
+            child: Text(
+              quantity.toString(),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add, color: Colors.green),
+            onPressed: () async {
+              if (user == null) return;
+              await CartService.instance.updateCartItemQuantity(
+                product.id,
+                quantity + 1,
+              );
+            },
+          ),
+        ],
+      ),
+    );
   }
 
-  Future<void> _toggleCart(Product product) async {
+  // Add to cart helper for Suggested Products
+  Future<void> _addSuggestedToCart(Product product) async {
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please log in to add items to cart.")),
       );
       return;
     }
-
-    final docRef = FirebaseFirestore.instance
-        .collection("users")
-        .doc(user!.uid)
-        .collection("cart")
-        .doc(product.id.toString());
-
-    setState(() {
-      if (_inCartIds.contains(product.id.toString())) {
-        _inCartIds.remove(product.id.toString());
-      } else {
-        _inCartIds.add(product.id.toString());
-      }
-    });
-
-    if (_inCartIds.contains(product.id.toString())) {
-      await CartService.instance.addToCart(product);
+    await CartService.instance.addToCart(product);
+    if (mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Added to cart!")));
-    } else {
-      await docRef.delete();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Removed from cart!")));
     }
+  }
+
+  // Stream of user's cart docs (id → quantity) for Suggested Products
+  Stream<Map<String, int>>? _cartQuantityMapStream() {
+    if (user == null) return null;
+    final col = FirebaseFirestore.instance
+        .collection("users")
+        .doc(user!.uid)
+        .collection("cart");
+    return col.snapshots().map((snap) {
+      final map = <String, int>{};
+      for (final d in snap.docs) {
+        final data = d.data();
+        final qty = (data['quantity'] is int)
+            ? data['quantity'] as int
+            : int.tryParse('${data['quantity']}') ?? 1;
+        map[d.id] = qty;
+      }
+      return map;
+    });
   }
 
   @override
@@ -110,10 +154,10 @@ class _CartPageState extends State<CartPage> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(6.0),
           child: Column(
             children: [
-              /// 🔹 Cart Items from Firestore
+              /// 🔹 Cart Items from Firestore (kept as-is with your CartService)
               StreamBuilder<List<Product>>(
                 stream: CartService.instance.getCartStream(),
                 builder: (context, snapshot) {
@@ -132,8 +176,8 @@ class _CartPageState extends State<CartPage> {
                         const SizedBox(height: 25),
                         Image.asset(
                           'assets/images/illustration.png',
-                          height: 200,
-                          width: 200,
+                          height: 180,
+                          width: 180,
                           fit: BoxFit.contain,
                         ),
                         const SizedBox(height: 1),
@@ -197,12 +241,14 @@ class _CartPageState extends State<CartPage> {
                                 await CartService.instance.removeFromCart(
                                   product,
                                 );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Removed from cart"),
-                                    duration: Duration(seconds: 1),
-                                  ),
-                                );
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Removed from cart"),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                }
                               },
                             ),
                           ),
@@ -215,7 +261,7 @@ class _CartPageState extends State<CartPage> {
 
               const Divider(height: 40),
 
-              /// 🔹 Suggested Products Section
+              /// 🔹 Suggested Products Section (with + / – stepper)
               Align(
                 alignment: Alignment.centerLeft,
                 child: const Text(
@@ -224,119 +270,133 @@ class _CartPageState extends State<CartPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                height: 225,
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: suggestedProducts.length,
-                        itemBuilder: (context, index) {
-                          final product = suggestedProducts[index];
-                          final inCart = _inCartIds.contains(
-                            product.id.toString(),
-                          );
 
-                          return InkWell(
-                            onTap: () {
-                              context.push('/productDetail', extra: product);
-                            },
-                            child: Container(
-                              width: 160,
-                              margin: const EdgeInsets.only(right: 12.0),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  ClipRRect(
+              // Listen to the cart collection to know which suggested items are in cart and their quantities
+              StreamBuilder<Map<String, int>>(
+                stream: _cartQuantityMapStream(),
+                builder: (context, cartSnap) {
+                  final qtyMap = cartSnap.data ?? const <String, int>{};
+
+                  return SizedBox(
+                    height: 236,
+                    child: isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: suggestedProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = suggestedProducts[index];
+                              final productIdStr = product.id.toString();
+                              final inCart = qtyMap.containsKey(productIdStr);
+                              final quantity = qtyMap[productIdStr] ?? 0;
+
+                              return InkWell(
+                                onTap: () {
+                                  context.push(
+                                    '/productDetail',
+                                    extra: product,
+                                  );
+                                },
+                                child: Container(
+                                  width: 160,
+                                  margin: const EdgeInsets.only(right: 12.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
                                     borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      product.image.isNotEmpty
-                                          ? product.image
-                                          : 'https://via.placeholder.com/150',
-                                      height: 120,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                    ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                    ),
-                                    child: Text(
-                                      product.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "\$${product.price.toStringAsFixed(2)}",
-                                    style: const TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-
-                                  /// 🔹 Add to Cart / View in Cart button
-                                  InkWell(
-                                    onTap: () async {
-                                      if (inCart) {
-                                        //context.push('/cart');
-                                      } else {
-                                        await _toggleCart(product);
-                                      }
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: inCart
-                                              ? const [
-                                                  Color(0xFFFFA726),
-                                                  Color(0xFFFF7043),
-                                                ]
-                                              : const [
-                                                  Color(0xFFFFA726),
-                                                  Color(0xFFFF7043),
-                                                ],
-                                        ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      ClipRRect(
                                         borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          inCart
-                                              ? "Added in Cart"
-                                              : "Add to Cart",
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        child: Image.network(
+                                          product.image.isNotEmpty
+                                              ? product.image
+                                              : 'https://via.placeholder.com/150',
+                                          height: 120,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 8),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                        ),
+                                        child: Text(
+                                          product.title,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "\$${product.price.toStringAsFixed(2)}",
+                                        style: const TextStyle(
+                                          color: Colors.blue,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+
+                                      // 🔹 If in cart → show stepper; else → Add to Cart button
+                                      inCart
+                                          ? _buildSuggestedQuantityStepper(
+                                              product,
+                                              quantity,
+                                            )
+                                          : InkWell(
+                                              onTap: () async {
+                                                await _addSuggestedToCart(
+                                                  product,
+                                                );
+                                              },
+                                              child: Container(
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                    ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 8,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  gradient:
+                                                      const LinearGradient(
+                                                        colors: [
+                                                          Color(0xFFFFA726),
+                                                          Color(0xFFFF7043),
+                                                        ],
+                                                      ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: const Center(
+                                                  child: Text(
+                                                    "Add to Cart",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                                ),
+                              );
+                            },
+                          ),
+                  );
+                },
               ),
 
               const SizedBox(height: 30),
