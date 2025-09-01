@@ -82,7 +82,7 @@ class ProductService {
   List<String>? _cachedBrands;
 
   /// Fetches a paginated list of products.
-  Future<List<Product>> loadProducts({int limit = 10, int skip = 0}) async {
+  Future<List<Product>> loadProducts({int limit = 194, int skip = 0}) async {
     final response = await http.get(
       Uri.parse('$baseUrl?limit=$limit&skip=$skip'),
     );
