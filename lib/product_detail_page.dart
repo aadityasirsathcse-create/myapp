@@ -270,12 +270,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         ),
 
                         const Spacer(),
-
-                        // 🛒 Buttons
-                        // 🛒 Buttons
                         Row(
                           children: [
-                            // Add / Remove Cart
                             Expanded(
                               child: Container(
                                 decoration: BoxDecoration(
@@ -337,7 +333,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ),
                             ),
                             const SizedBox(width: 16),
-                            // Buy Now
                             // Buy Now
                             Expanded(
                               child: Container(
