@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:myapp/cart_service.dart';
 import 'product_service.dart';
-import 'cart_service.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -37,8 +36,6 @@ class _CartPageState extends State<CartPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cartItems = CartService.instance.cartItems; // get dynamic cart items
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -55,43 +52,61 @@ class _CartPageState extends State<CartPage> {
             ),
           ],
         ),
-        toolbarHeight: 70,
+        toolbarHeight: 80,
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              if (cartItems.isEmpty) ...[
-                const SizedBox(height: 25),
-                Image.asset(
-                  'assets/images/illustration.png',
-                  height: 200,
-                  width: 200,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 1),
-                const Text(
-                  'Nothing in your cart yet!',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Check out some great discounts below!',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 30),
-              ] else ...[
-                const SizedBox(height: 10),
-                ListView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: cartItems.length,
-                  itemBuilder: (context, index) {
-                    final product = cartItems[index];
-                    return InkWell(
+              /// 🔹 Cart Items from Firestore
+              StreamBuilder<List<Product>>(
+                stream: CartService.instance.getCartStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return const Text("Error loading cart items");
+                  }
+
+                  final cartItems = snapshot.data ?? [];
+
+                  if (cartItems.isEmpty) {
+                    return Column(
+                      children: [
+                        const SizedBox(height: 25),
+                        Image.asset(
+                          'assets/images/illustration.png',
+                          height: 200,
+                          width: 200,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 1),
+                        const Text(
+                          'Nothing in your cart yet!',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Check out some great discounts below!',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 30),
+                      ],
+                    );
+                  }
+
+                  return ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: cartItems.length,
+                    itemBuilder: (context, index) {
+                      final product = cartItems[index];
+                      return InkWell(
                       onTap: () {
                         context.push('/productDetail', extra: product);
                       },
@@ -117,36 +132,38 @@ class _CartPageState extends State<CartPage> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          subtitle: Text(
-                            "\$${product.price.toStringAsFixed(2)}",
-                          ),
+                          subtitle: Text("\$${product.price.toStringAsFixed(2)}"),
                           trailing: IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              setState(() {
-                                CartService.instance.removeFromCart(product);
-                              });
+                            onPressed: () async {
+                              await CartService.instance.removeFromCart(product);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Removed from cart"),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
                             },
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                      )
+                      );
+                    },
+                  );
+                },
+              ),
+
               const Divider(height: 40),
+
+              /// 🔹 Suggested Products Section
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
+                child: const Text(
                   'Suggested Products',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 12),
-              // Locate this section in lib/cart_page.dart
               SizedBox(
                 height: 225,
                 child: isLoading
@@ -156,18 +173,11 @@ class _CartPageState extends State<CartPage> {
                         itemCount: suggestedProducts.length,
                         itemBuilder: (context, index) {
                           final product = suggestedProducts[index];
-                          // Wrap the Container with InkWell like this:
                           return InkWell(
-                            // Add this InkWell
                             onTap: () {
-                              // Add this onTap callback
-                              context.push(
-                                '/productDetail',
-                                extra: product,
-                              ); // Add this navigation
-                            }, // Close onTap
+                              context.push('/productDetail', extra: product);
+                            },
                             child: Container(
-                              // This Container is already there
                               width: 160,
                               margin: const EdgeInsets.only(right: 12.0),
                               decoration: BoxDecoration(
@@ -191,8 +201,7 @@ class _CartPageState extends State<CartPage> {
                                   const SizedBox(height: 8),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                    ),
+                                        horizontal: 6),
                                     child: Text(
                                       product.title,
                                       maxLines: 1,
@@ -213,45 +222,21 @@ class _CartPageState extends State<CartPage> {
                                     ),
                                   ),
                                   const SizedBox(height: 6),
-                                  // Add to cart button (already has an InkWell)
                                   InkWell(
-                                    onTap: () {
-                                      if (CartService.instance.isInCart(
-                                        product,
-                                      )) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              "Product already in cart!",
-                                            ),
-                                            duration: Duration(seconds: 1),
-                                          ),
-                                        );
-                                      } else {
-                                        setState(() {
-                                          CartService.instance.addToCart(
-                                            product,
-                                          );
-                                        });
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text("Added to cart!"),
-                                            duration: Duration(seconds: 1),
-                                          ),
-                                        );
-                                      }
+                                    onTap: () async {
+                                      await CartService.instance.addToCart(product);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Added to cart!"),
+                                          duration: Duration(seconds: 1),
+                                        ),
+                                      );
                                     },
                                     child: Container(
                                       margin: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
+                                          horizontal: 12),
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                      ),
+                                          vertical: 8),
                                       decoration: BoxDecoration(
                                         gradient: const LinearGradient(
                                           colors: [
@@ -274,13 +259,15 @@ class _CartPageState extends State<CartPage> {
                                   ),
                                 ],
                               ),
-                            ), // Close the Container
-                          ); // Close the new InkWell
+                            ),
+                          );
                         },
                       ),
               ),
 
               const SizedBox(height: 30),
+
+              /// 🔹 Button
               ElevatedButton(
                 onPressed: () => context.go('/home'),
                 style: ElevatedButton.styleFrom(
@@ -303,9 +290,7 @@ class _CartPageState extends State<CartPage> {
                   child: Container(
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 13,
-                    ),
+                        horizontal: 30, vertical: 13),
                     width: double.infinity,
                     child: const Text(
                       'Discover more Products',

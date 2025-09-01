@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:myapp/cart_service.dart';
-import 'product_service.dart';
+import 'package:myapp/product_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
@@ -14,12 +16,31 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
   bool _isFavorite = false;
+  final user = FirebaseAuth.instance.currentUser;
+
   @override
   void initState() {
     super.initState();
-    _isFavorite = CartService.instance.wishlistItems.contains(widget.product);
+    _checkIfFavorite();
   }
 
+  /// 🔥 Check if product already in wishlist
+  Future<void> _checkIfFavorite() async {
+    if (user == null) return;
+
+    final doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(user!.uid)
+        .collection("wishlist")
+        .doc(widget.product.id.toString())
+        .get();
+
+    setState(() {
+      _isFavorite = doc.exists;
+    });
+  }
+
+  /// ❤️ Toggle favorite state
   void _toggleFavorite() {
     setState(() {
       _isFavorite = !_isFavorite;
@@ -29,6 +50,55 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         CartService.instance.removeFromWishlist(widget.product);
       }
     });
+  }
+
+  /// 🛒 Add product to cart with duplicate check
+  Future<void> _addToCart() async {
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please log in to add items to cart.")),
+      );
+      return;
+    }
+
+    final docRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(user!.uid)
+        .collection("cart")
+        .doc(widget.product.id.toString());
+
+    final doc = await docRef.get();
+
+    if (doc.exists) {
+      // ❌ Item already in cart
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Already in cart!")),
+      );
+    } else {
+      // ✅ Add new item
+      await docRef.set({
+        "id": widget.product.id,
+        "title": widget.product.title,
+        "price": widget.product.price,
+        "image": widget.product.image,
+        "category": widget.product.category,
+        "description": widget.product.description,
+        "brand": widget.product.brand,
+        "rating": widget.product.rating,
+        "discountPercentage": widget.product.discountPercentage,
+        "quantity": 1,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Item added to cart!")),
+      );
+    }
+  }
+
+  /// ⚡ Buy Now → Adds to cart and navigates
+  Future<void> _buyNow() async {
+    await _addToCart();
+    context.go('/cart');
   }
 
   @override
@@ -56,7 +126,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           SafeArea(
             child: Column(
               children: [
-                // Top AppBar row
+                // 🔙 Back + ❤️ Wishlist button
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
@@ -80,7 +150,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                 ),
 
-                // Product Image
+                // 🖼️ Product Image
                 Hero(
                   tag: product.id,
                   child: ClipRRect(
@@ -96,7 +166,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                 ),
 
-                // Product info
+                // 📦 Product Info
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -121,7 +191,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                         const SizedBox(height: 8),
 
-                        // Price & Discount
+                        // Price + Discount
                         Row(
                           children: [
                             Text(
@@ -156,7 +226,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                         const SizedBox(height: 12),
 
-                        // Rating stars
+                        // ⭐ Rating stars
                         Row(
                           children: List.generate(
                             5,
@@ -172,7 +242,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                         const SizedBox(height: 16),
 
-                        // Description
+                        // 📖 Description
                         Text(
                           product.description,
                           style: const TextStyle(fontSize: 16, height: 1.4),
@@ -180,10 +250,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                         const Spacer(),
 
-                        // Action Buttons
+                        // 🛒 Buttons
                         Row(
                           children: [
-                            // Add to Cart Button
+                            // Add to Cart
                             Expanded(
                               child: Container(
                                 decoration: BoxDecoration(
@@ -201,35 +271,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   color: Colors.transparent,
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(12),
-                                    onTap: () {
-                                      if (CartService.instance.isInCart(
-                                        product,
-                                      )) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              "Product already in cart!",
-                                            ),
-                                            duration: Duration(seconds: 1),
-                                          ),
-                                        );
-                                      } else {
-                                        setState(() {
-                                          CartService.instance.addToCart(
-                                            product,
-                                          );
-                                        });
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text("Added to cart!"),
-                                            duration: Duration(seconds: 1),
-                                          ),
-                                        );
-                                      }
+                                    onTap: () async {
+                                      await CartService.instance.addToCart(product);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Added to cart!"),
+                                          duration: Duration(seconds: 1),
+                                        ),
+                                      );
                                     },
                                     child: const Padding(
                                       padding: EdgeInsets.symmetric(
@@ -251,7 +300,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ),
                             ),
                             const SizedBox(width: 16),
-                            // Buy Now Button
+                            // Buy Now
                             Expanded(
                               child: Container(
                                 decoration: BoxDecoration(
@@ -269,10 +318,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   color: Colors.transparent,
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(12),
-                                    onTap: () {
-                                      CartService.instance.addToCart(product);
-                                      context.go('/cart');
-                                    },
+                                    onTap: _buyNow,
                                     child: const Padding(
                                       padding: EdgeInsets.symmetric(
                                         vertical: 16,

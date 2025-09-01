@@ -25,6 +25,7 @@ class Product {
     required this.discountPercentage,
   });
 
+  /// ✅ From REST API JSON (dummyjson.com)
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'] as int,
@@ -33,14 +34,45 @@ class Product {
       image: (json['images'] != null && (json['images'] as List).isNotEmpty)
           ? json['images'][0] as String
           : '',
-      category: json['category'] as String,
+      category: json['category'] ?? '',
       description: json['description'] ?? '',
       brand: json['brand'] ?? '',
-      rating: (json['rating'] as num).toDouble(),
-      discountPercentage: (json['discountPercentage'] as num).toDouble(),
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
+  /// ✅ To Map (for Firestore)
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'price': price,
+      'image': image,
+      'category': category,
+      'description': description,
+      'brand': brand,
+      'rating': rating,
+      'discountPercentage': discountPercentage,
+    };
+  }
+
+  /// ✅ From Firestore Map
+  factory Product.fromMap(Map<String, dynamic> map) {
+    return Product(
+      id: map['id'] ?? 0,
+      title: map['title'] ?? '',
+      price: (map['price'] as num?)?.toDouble() ?? 0,
+      image: map['image'] ?? '',
+      category: map['category'] ?? '',
+      description: map['description'] ?? '',
+      brand: map['brand'] ?? '',
+      rating: (map['rating'] as num?)?.toDouble() ?? 0,
+      discountPercentage: (map['discountPercentage'] as num?)?.toDouble() ?? 0,
     );
   }
 }
+
 
 class ProductService {
   final String baseUrl = 'https://dummyjson.com/products';
@@ -59,9 +91,8 @@ class ProductService {
       final data = json.decode(response.body);
       final List<dynamic> productsJson = data['products'];
 
-      _cachedProducts = productsJson
-          .map((json) => Product.fromJson(json))
-          .toList();
+      _cachedProducts =
+          productsJson.map((json) => Product.fromJson(json)).toList();
 
       _cachedProducts!.shuffle(Random());
       return _cachedProducts!;
