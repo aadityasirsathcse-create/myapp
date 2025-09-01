@@ -4,6 +4,9 @@ import 'package:myapp/cart_service.dart';
 import 'package:myapp/product_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myapp/product_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
@@ -139,6 +142,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Column(
               children: [
                 // 🔙 Back + ❤️ Wishlist button
+                // 🔙 Back + ❤️ Wishlist button
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
@@ -163,6 +167,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ),
 
                 // 🖼️ Product Image
+                // 🖼️ Product Image
                 Hero(
                   tag: product.id,
                   child: ClipRRect(
@@ -178,6 +183,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                 ),
 
+                // 📦 Product Info
                 // 📦 Product Info
                 Expanded(
                   child: Container(
@@ -203,6 +209,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                         const SizedBox(height: 8),
 
+                        // Price + Discount
                         // Price + Discount
                         Row(
                           children: [
@@ -239,6 +246,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         const SizedBox(height: 12),
 
                         // ⭐ Rating stars
+                        // ⭐ Rating stars
                         Row(
                           children: List.generate(
                             5,
@@ -255,6 +263,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         const SizedBox(height: 16),
 
                         // 📖 Description
+                        // 📖 Description
                         Text(
                           product.description,
                           style: const TextStyle(fontSize: 16, height: 1.4),
@@ -262,6 +271,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                         const Spacer(),
 
+                        // 🛒 Buttons
                         // 🛒 Buttons
                         Row(
                           children: [
@@ -327,6 +337,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ),
                             ),
                             const SizedBox(width: 16),
+                            // Buy Now
                             // Buy Now
                             Expanded(
                               child: Container(
