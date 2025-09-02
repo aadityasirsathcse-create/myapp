@@ -197,6 +197,13 @@ class _HomePageState extends State<HomePage> {
                 context.push('/wishlist');
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.add),
+              title: const Text('Add Product'),
+              onTap: () {
+                context.push('/addproduct');
+              },
+            ),
             const ListTile(
               leading: Icon(Icons.settings),
               title: Text('Settings'),
