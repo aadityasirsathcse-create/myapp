@@ -37,7 +37,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _loadInitialData() async {
-    await _loadProducts();
+    await loadAllProducts();
     await _loadFilters();
     setState(() {
       _isLoading = false;
@@ -53,8 +53,8 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  Future<void> _loadProducts() async {
-    final products = await _productService.loadProducts();
+  Future<void> loadAllProducts() async {
+    final products = await _productService.loadAllProducts();
     setState(() {
       _allProducts = products;
       _filteredProducts = products;

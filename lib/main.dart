@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:myapp/add_product_page.dart';
 import 'package:myapp/cart_page.dart';
 import 'package:myapp/home_page.dart';
 import 'package:myapp/onboarding_page.dart';
@@ -26,6 +27,7 @@ final _router = GoRouter(
     ),
     GoRoute(path: '/cart', builder: (context, state) => const CartPage()),
     GoRoute(path: '/search', builder: (context, state) => const SearchPage()),
+    GoRoute(path: '/addproduct', builder: (context, state) => const AddProductPage()),
     GoRoute(
       path: '/wishlist',
       builder: (context, state) => const WishlistPage(),

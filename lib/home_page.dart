@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadProducts(); // Initial product load
+    loadProducts(); // Initial product load
 
     // Add a listener to the scroll controller to detect when the user reaches the end.
     _scrollController.addListener(() {
@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage> {
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent - 200 &&
           !_isLoading) {
-        _loadProducts();
+        loadProducts();
       }
     });
   }
@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// Loads products paginated.
-  Future<void> _loadProducts() async {
+  Future<void> loadProducts() async {
     if (_isLoading || !_hasMore)
       return; // Don't load if already loading or no more products
 

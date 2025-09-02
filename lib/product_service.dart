@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Product {
   final int id;
@@ -75,14 +76,37 @@ class Product {
 
 class ProductService {
   final String baseUrl = 'https://dummyjson.com/products';
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Caching is removed to simplify pagination logic.
-  // We can add a more sophisticated caching layer later if needed.
   List<String>? _cachedCategories;
   List<String>? _cachedBrands;
 
-  /// Fetches a paginated list of products.
-  Future<List<Product>> loadProducts({int limit = 194, int skip = 0}) async {
+  /// ✅ Add Product (dummyjson + Firestore)
+  Future<Product> addProduct(Product product) async {
+    // First send to dummyjson (so your old flow works)
+    final response = await http.post(
+      Uri.parse('$baseUrl/add'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(product.toMap()),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final addedProduct = Product.fromJson(json.decode(response.body));
+
+      // ✅ Also save into Firestore
+      await _firestore
+    .collection("products")
+    .add(addedProduct.toMap()); // auto-generated unique ID
+
+
+      return addedProduct;
+    } else {
+      throw Exception('Failed to add product: ${response.body}');
+    }
+  }
+
+  /// ✅ Load dummyjson products
+  Future<List<Product>> loadProducts({int limit = 0, int skip = 0}) async {
     final response = await http.get(
       Uri.parse('$baseUrl?limit=$limit&skip=$skip'),
     );
@@ -91,23 +115,44 @@ class ProductService {
       final data = json.decode(response.body);
       final List<dynamic> productsJson = data['products'];
 
-      // No more shuffling, as the order is now important for pagination.
       return productsJson.map((json) => Product.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load products: ${response.statusCode}');
     }
   }
 
-  /// Searches for products using the remote API.
+  /// ✅ Load Firestore products (your own db)
+  Future<List<Product>> loadFirebaseProducts() async {
+    final snapshot = await _firestore.collection("products").get();
+    return snapshot.docs.map((doc) => Product.fromMap(doc.data())).toList();
+  }
+
+  Future<List<Product>> loadAllProducts({int limit = 0, int skip = 0}) async {
+  try {
+    // Load API products
+    final apiProducts = await loadProducts(limit: limit, skip: skip);
+
+    // Load Firestore products
+    final firebaseProducts = await loadFirebaseProducts();
+
+    // ✅ Concatenate both lists
+    final allProducts = [...apiProducts, ...firebaseProducts];
+
+    return allProducts;
+  } catch (e) {
+    throw Exception("Failed to load all products: $e");
+  }
+}
+
+
   Future<List<Product>> searchProducts({
     required String query,
-    String? category, // Category filtering on the client side for this API
+    String? category,
   }) async {
     if (query.isEmpty) {
       return [];
     }
 
-    // Use the search endpoint from the API
     final response = await http.get(
       Uri.parse('$baseUrl/search?q=${Uri.encodeComponent(query)}'),
     );
@@ -115,16 +160,14 @@ class ProductService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> productsJson = data['products'];
-      List<Product> products = productsJson
-          .map((json) => Product.fromJson(json))
-          .toList();
+      List<Product> products =
+          productsJson.map((json) => Product.fromJson(json)).toList();
 
-      // The dummyjson API doesn't support filtering search by category,
-      // so we do it on the client side if a category is provided.
       if (category != null && category != 'All') {
-        products = products.where((product) {
-          return product.category.toLowerCase() == category.toLowerCase();
-        }).toList();
+        products = products
+            .where((product) =>
+                product.category.toLowerCase() == category.toLowerCase())
+            .toList();
       }
 
       return products;
@@ -157,23 +200,17 @@ class ProductService {
     }
   }
 
-  // This method is inefficient as it loads all products first.
-  // However, dummyjson API does not provide an endpoint to get all unique brands.
-  // For a real application, this should be handled by the backend.
-  // We'll leave it as is for now.
   Future<List<String>> fetchBrands({bool forceRefresh = false}) async {
     if (_cachedBrands != null && !forceRefresh) {
       return _cachedBrands!;
     }
 
-    // This is still inefficient, fetching ALL products just to get brands.
     final response = await http.get(Uri.parse('$baseUrl?limit=0'));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<dynamic> productsJson = data['products'];
-      final allProducts = productsJson
-          .map((json) => Product.fromJson(json))
-          .toList();
+      final allProducts =
+          productsJson.map((json) => Product.fromJson(json)).toList();
       final brandsSet = allProducts.map((p) => p.brand).toSet();
       _cachedBrands = ["All", ...brandsSet];
       return _cachedBrands!;
