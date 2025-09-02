@@ -4,6 +4,7 @@ import 'package:myapp/product_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shimmer/shimmer.dart';
 
 class WishlistPage extends StatelessWidget {
   const WishlistPage({Key? key}) : super(key: key);
@@ -12,8 +13,9 @@ class WishlistPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text("Please log in to view your wishlist.")),
+      return Scaffold(
+        appBar: AppBar(title: const Text('My Wishlist')),
+        body: const Center(child: Text("Please log in to view your wishlist.")),
       );
     }
 
@@ -27,7 +29,7 @@ class WishlistPage extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return _buildWishlistSkeleton();
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -73,13 +75,43 @@ class WishlistPage extends StatelessWidget {
                           .collection("users")
                           .doc(user.uid)
                           .collection("wishlist")
-                          .doc(product.id.toString()) // use product.id as doc id
+                          .doc(product.id.toString())
                           .delete();
                     },
                   ),
                 ),
               );
             },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildWishlistSkeleton() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        itemCount: 5, // Display 5 skeleton items
+        itemBuilder: (context, index) {
+          return ListTile(
+            leading: Container(
+              width: 50,
+              height: 50,
+              color: Colors.white,
+            ),
+            title: Container(
+              height: 16,
+              color: Colors.white,
+            ),
+            subtitle: Container(
+              margin: const EdgeInsets.only(top: 8.0),
+              height: 14,
+              width: 80,
+              color: Colors.white,
+            ),
+            trailing: const Icon(Icons.delete, color: Colors.grey),
           );
         },
       ),

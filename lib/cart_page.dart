@@ -4,6 +4,7 @@ import 'package:myapp/cart_service.dart';
 import 'product_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -142,7 +143,7 @@ class _CartPageState extends State<CartPage> {
           children: [
             IconButton(
               icon: const Icon(Icons.arrow_back, size: 27),
-              onPressed: () => context.push('/home'),
+              onPressed: () => context.pop(),
             ),
             const Text(
               'My Cart',
@@ -162,7 +163,7 @@ class _CartPageState extends State<CartPage> {
                 stream: CartService.instance.getCartStream(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return _buildCartListSkeleton();
                   }
                   if (snapshot.hasError) {
                     return const Text("Error loading cart items");
@@ -280,7 +281,7 @@ class _CartPageState extends State<CartPage> {
                   return SizedBox(
                     height: 236,
                     child: isLoading
-                        ? const Center(child: CircularProgressIndicator())
+                        ? _buildSuggestedProductsSkeleton()
                         : ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: suggestedProducts.length,
@@ -405,7 +406,7 @@ class _CartPageState extends State<CartPage> {
               ElevatedButton(
                 onPressed: () => context.push('/home'),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(6.0),
+                  padding: const EdgeInsets.fromLTRB(6.0, 6.0, 6.0, 42.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(13),
                   ),
@@ -438,6 +439,92 @@ class _CartPageState extends State<CartPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCartListSkeleton() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: 3, // Show 3 skeleton items
+        itemBuilder: (context, index) {
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  color: Colors.white,
+                ),
+              ),
+              title: Container(
+                height: 16,
+                color: Colors.white,
+              ),
+              subtitle: Container(
+                height: 14,
+                width: 80,
+                color: Colors.white,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSuggestedProductsSkeleton() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 4, // Number of skeleton items
+        itemBuilder: (context, index) {
+          return Container(
+            width: 160,
+            margin: const EdgeInsets.only(right: 12.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 120,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Container(
+                    height: 14,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Container(
+                    height: 14,
+                    width: 60,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

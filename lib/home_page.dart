@@ -3,6 +3,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:myapp/product_service.dart'; // Product + ProductService
+import 'package:shimmer/shimmer.dart';
 
 // HomePage is now a StatefulWidget to manage state for infinite scrolling.
 class HomePage extends StatefulWidget {
@@ -84,7 +85,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
 
-      /// ==== AppBar ====
+      /// ==== AppBar ====/
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -144,7 +145,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
 
-      /// ==== Drawer ====
+      /// ==== Drawer ====/
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -212,7 +213,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
 
-      /// ==== Body ====
+      /// ==== Body ====/
       body: SingleChildScrollView(
         controller: _scrollController, // Attach the scroll controller
         child: Column(
@@ -226,9 +227,19 @@ class _HomePageState extends State<HomePage> {
                     .fetchPromotionImages(), // Fetch images from the service
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    ); // Show a loading indicator
+                    return Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: CarouselSlider(
+                        options: CarouselOptions(height: 180.0),
+                        items: [
+                          Container(
+                            width: double.infinity,
+                            color: Colors.white,
+                          )
+                        ],
+                      ),
+                    );
                   } else if (snapshot.hasError) {
                     return Center(
                       child: Text(
@@ -285,26 +296,29 @@ class _HomePageState extends State<HomePage> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics:
-                    const NeverScrollableScrollPhysics(), // GridView should not scroll independently
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 0.75,
-                ),
-                itemCount: _products.length,
-                itemBuilder: (context, index) {
-                  final product = _products[index];
-                  return ProductCard(product: product);
-                },
-              ),
+              child: _products.isEmpty && _isLoading
+                  ? _buildProductGridSkeleton()
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics:
+                          const NeverScrollableScrollPhysics(), // GridView should not scroll independently
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16.0,
+                        mainAxisSpacing: 16.0,
+                        childAspectRatio: 0.75,
+                      ),
+                      itemCount: _products.length,
+                      itemBuilder: (context, index) {
+                        final product = _products[index];
+                        return ProductCard(product: product);
+                      },
+                    ),
             ),
 
             // Loading indicator at the bottom
-            if (_isLoading)
+            if (_isLoading && _products.isNotEmpty)
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Center(child: CircularProgressIndicator()),
@@ -315,7 +329,7 @@ class _HomePageState extends State<HomePage> {
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Center(
-                  child: Text("You've reached the end of the list."),
+                  child: Text("You\'ve reached the end of the list."),
                 ),
               ),
 
@@ -346,9 +360,26 @@ class _HomePageState extends State<HomePage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
+
+  Widget _buildProductGridSkeleton() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16.0,
+        mainAxisSpacing: 16.0,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: 6, // Number of skeleton items
+      itemBuilder: (context, index) {
+        return const ProductCardSkeleton();
+      },
+    );
+  }
 }
 
-/// ==== Product Card ====
+/// ==== Product Card ====/
 class ProductCard extends StatelessWidget {
   final Product product;
 
@@ -400,6 +431,51 @@ class ProductCard extends StatelessWidget {
                   Text(
                     '\$${product.price.toStringAsFixed(2)}',
                     style: const TextStyle(fontSize: 14.0, color: Colors.black),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProductCardSkeleton extends StatelessWidget {
+  const ProductCardSkeleton({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Card(
+        elevation: 2.0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                color: Colors.white,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 14.0,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(height: 4.0),
+                  Container(
+                    width: 50.0,
+                    height: 14.0,
+                    color: Colors.white,
                   ),
                 ],
               ),

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'product_service.dart';
+import 'package:shimmer/shimmer.dart';
 
 enum SearchState { initial, searching, results }
 
@@ -27,12 +28,20 @@ class _SearchPageState extends State<SearchPage> {
   double _minDiscount = 0;
 
   SearchState _currentState = SearchState.initial;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
-    _loadFilters();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    await _loadProducts();
+    await _loadFilters();
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _loadFilters() async {
@@ -59,11 +68,9 @@ class _SearchPageState extends State<SearchPage> {
       _filteredProducts = _allProducts.where((p) {
         final matchesQuery =
             query.isEmpty || p.title.toLowerCase().contains(lowerQuery);
-        final matchesCategory =
-            _selectedCategory == "All" ||
+        final matchesCategory = _selectedCategory == "All" ||
             p.category.toLowerCase() == _selectedCategory.toLowerCase();
-        final matchesBrand =
-            _selectedBrand == "All" ||
+        final matchesBrand = _selectedBrand == "All" ||
             p.brand.toLowerCase() == _selectedBrand.toLowerCase();
         final matchesPrice = p.price >= _minPrice && p.price <= _maxPrice;
         final matchesRating = p.rating >= _minRating;
@@ -252,8 +259,9 @@ class _SearchPageState extends State<SearchPage> {
       ),
       body: Builder(
         builder: (context) {
-          if (_allProducts.isEmpty)
-            return const Center(child: CircularProgressIndicator());
+          if (_isLoading) {
+            return _buildProductGridSkeleton();
+          }
           switch (_currentState) {
             case SearchState.initial:
               return _buildInitialState();
@@ -290,6 +298,24 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 );
               }).toList(),
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.all(8),
+          sliver: SliverGrid(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final product = _filteredProducts[index];
+              return GestureDetector(
+                onTap: () => context.push('/productDetail', extra: product),
+                child: _buildProductCard(product),
+              );
+            }, childCount: _filteredProducts.length),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 0.7,
             ),
           ),
         ),
@@ -339,61 +365,63 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildResultsState() {
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Sort By: Popularity",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                InkWell(
-                  onTap: _openFilterModal,
+    return _filteredProducts.isEmpty
+        ? const Center(child: Text('No products found'))
+        : CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(Icons.filter_list),
-                      const SizedBox(width: 4),
-                      Text(
-                        _selectedCategory == "All"
-                            ? "Filter"
-                            : _selectedCategory,
-                        style: const TextStyle(fontSize: 16),
+                      const Text(
+                        "Sort By: Popularity",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: _openFilterModal,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.filter_list),
+                            const SizedBox(width: 4),
+                            Text(
+                              _selectedCategory == "All"
+                                  ? "Filter"
+                                  : _selectedCategory,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.all(8),
-          sliver: SliverGrid(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final product = _filteredProducts[index];
-              return GestureDetector(
-                onTap: () => context.push('/productDetail', extra: product),
-                child: _buildProductCard(product),
-              );
-            }, childCount: _filteredProducts.length),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 0.7,
-            ),
-          ),
-        ),
-      ],
-    );
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.all(8),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final product = _filteredProducts[index];
+                    return GestureDetector(
+                      onTap: () => context.push('/productDetail', extra: product),
+                      child: _buildProductCard(product),
+                    );
+                  }, childCount: _filteredProducts.length),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 0.7,
+                  ),
+                ),
+              ),
+            ],
+          );
   }
 
   Widget _buildProductCard(Product product) {
@@ -464,6 +492,64 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildProductGridSkeleton() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: GridView.builder(
+        padding: const EdgeInsets.all(8),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 0.7,
+        ),
+        itemCount: 8,
+        itemBuilder: (context, index) {
+          return Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    color: Colors.white,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 14.0,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(height: 4.0),
+                      Container(
+                        width: 50.0,
+                        height: 14.0,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(height: 4.0),
+                      Container(
+                        width: 80.0,
+                        height: 12.0,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
