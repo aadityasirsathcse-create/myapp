@@ -1,10 +1,10 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'product_service.dart';
 import 'package:shimmer/shimmer.dart';
+import 'product_service.dart';
 
 enum SearchState { initial, searching, results }
+enum SortOption { priceLowHigh, priceHighLow, ratingHighLow, discountHighLow }
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -27,6 +27,7 @@ class _SearchPageState extends State<SearchPage> {
   double _minRating = 0;
   double _minDiscount = 0;
 
+  SortOption _selectedSort = SortOption.priceLowHigh;
   SearchState _currentState = SearchState.initial;
   bool _isLoading = false;
 
@@ -82,6 +83,23 @@ class _SearchPageState extends State<SearchPage> {
             matchesRating &&
             matchesDiscount;
       }).toList();
+
+      // Apply sorting
+      switch (_selectedSort) {
+        case SortOption.priceLowHigh:
+          _filteredProducts.sort((a, b) => a.price.compareTo(b.price));
+          break;
+        case SortOption.priceHighLow:
+          _filteredProducts.sort((a, b) => b.price.compareTo(a.price));
+          break;
+        case SortOption.ratingHighLow:
+          _filteredProducts.sort((a, b) => b.rating.compareTo(a.rating));
+          break;
+        case SortOption.discountHighLow:
+          _filteredProducts
+              .sort((a, b) => b.discountPercentage.compareTo(a.discountPercentage));
+          break;
+      }
     });
   }
 
@@ -99,7 +117,7 @@ class _SearchPageState extends State<SearchPage> {
             return Padding(
               padding: MediaQuery.of(context).viewInsets,
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
@@ -177,12 +195,35 @@ class _SearchPageState extends State<SearchPage> {
                             setModalState(() => _minDiscount = val),
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          _applyFilters();
-                          Navigator.pop(context);
-                        },
-                        child: const Text("Apply Filters"),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                _applyFilters();
+                                Navigator.pop(context);
+                              },
+                              child: const Text("Apply Filters"),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                setModalState(() {
+                                  _selectedCategory = "All";
+                                  _selectedBrand = "All";
+                                  _minPrice = 0;
+                                  _maxPrice = 1000;
+                                  _minRating = 0;
+                                  _minDiscount = 0;
+                                });
+                                _applyFilters();
+                              },
+                              child: const Text("Clear Filters"),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -371,17 +412,34 @@ class _SearchPageState extends State<SearchPage> {
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Sort By: Popularity",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      DropdownButton<SortOption>(
+                        value: _selectedSort,
+                        underline: const SizedBox(),
+                        items: const [
+                          DropdownMenuItem(
+                              value: SortOption.priceLowHigh,
+                              child: Text("Price: Low → High")),
+                          DropdownMenuItem(
+                              value: SortOption.priceHighLow,
+                              child: Text("Price: High → Low")),
+                          DropdownMenuItem(
+                              value: SortOption.ratingHighLow,
+                              child: Text("Rating")),
+                          DropdownMenuItem(
+                              value: SortOption.discountHighLow,
+                              child: Text("Discount")),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() => _selectedSort = val);
+                            _applyFilters(query: "");
+                          }
+                        },
                       ),
                       InkWell(
                         onTap: _openFilterModal,
@@ -408,7 +466,8 @@ class _SearchPageState extends State<SearchPage> {
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final product = _filteredProducts[index];
                     return GestureDetector(
-                      onTap: () => context.push('/productDetail', extra: product),
+                      onTap: () =>
+                          context.push('/productDetail', extra: product),
                       child: _buildProductCard(product),
                     );
                   }, childCount: _filteredProducts.length),
@@ -512,7 +571,8 @@ class _SearchPageState extends State<SearchPage> {
         itemBuilder: (context, index) {
           return Card(
             elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
