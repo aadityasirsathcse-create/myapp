@@ -26,7 +26,7 @@ class Product {
     required this.discountPercentage,
   });
 
-  /// ✅ From REST API JSON (dummyjson.com)
+  // From REST API JSON (dummyjson.com)
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'] as int,
@@ -43,7 +43,7 @@ class Product {
     );
   }
 
-  /// ✅ To Map (for Firestore)
+  // To Map (for Firestore)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -58,7 +58,7 @@ class Product {
     };
   }
 
-  /// ✅ From Firestore Map
+  // From Firestore Map
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
       id: map['id'] ?? 0,
@@ -90,7 +90,7 @@ class ProductService {
     }
   }
 
-  /// ✅ Load dummyjson products
+  // Load dummyjson products
   Future<List<Product>> loadProducts({int limit = 0, int skip = 0}) async {
     final response = await http.get(
       Uri.parse('$baseUrl?limit=$limit&skip=$skip'),
@@ -106,7 +106,7 @@ class ProductService {
     }
   }
 
-  /// ✅ Load Firestore products (your own db)
+  // Load Firestore products (your own db)
   Future<List<Product>> loadFirebaseProducts() async {
     final snapshot = await _firestore.collection("products").get();
     return snapshot.docs.map((doc) => Product.fromMap(doc.data())).toList();
@@ -120,7 +120,7 @@ class ProductService {
     // Load Firestore products
     final firebaseProducts = await loadFirebaseProducts();
 
-    // ✅ Concatenate both lists
+    // Concatenate both lists
     final allProducts = [...apiProducts, ...firebaseProducts];
 
     return allProducts;
