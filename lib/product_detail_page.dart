@@ -226,8 +226,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
             const SizedBox(width: 16),
-            Expanded(child: _buildBuyNowButton(isInCart)),
-          ],
+            Expanded(child: _buildBuyNowButton(isInCart, quantity: quantity)),          
+            ],
         );
       },
     );
@@ -316,7 +316,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  Widget _buildBuyNowButton(bool isInCart) {
+  Widget _buildBuyNowButton(bool isInCart, {int quantity = 1}) {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -334,7 +334,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             if (!isInCart) {
               CartService.instance.addToCart(widget.product);
             }
-            context.push('/cart');
+            context.push('/checkout', extra: {'product': widget.product, 'quantity': quantity});
           },
           child: const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),

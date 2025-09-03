@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:myapp/cart_page.dart';
+import 'package:myapp/checkout_out_page.dart';
 import 'package:myapp/home_page.dart';
 import 'package:myapp/onboarding_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:myapp/product_service.dart';
 import 'package:myapp/search_page.dart';
+import 'package:myapp/shipping_payment_page.dart';
 import 'package:myapp/signup_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:myapp/login_page.dart';
@@ -127,6 +129,18 @@ final _router = GoRouter(
       path: '/productDetail',
       builder: (context, state) =>
           ProductDetailPage(product: state.extra as Product),
+    ),
+        GoRoute(
+        path: '/shippingPayment',
+        builder: (context, state) => const ShippingPaymentPage()),
+    GoRoute(
+      path: '/checkout',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        final product = extra['product'] as Product;
+        final quantity = extra['quantity'] as int;
+        return CheckoutPage(price: product.price, quantity: quantity,);
+      }
     ),
     GoRoute(path: '/cart', builder: (context, state) => const CartPage()),
     GoRoute(path: '/search', builder: (context, state) => const SearchPage()),
