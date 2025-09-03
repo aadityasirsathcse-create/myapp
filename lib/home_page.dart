@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myapp/product_service.dart'; // Product + ProductService
+import 'package:myapp/product_service.dart';
 import 'package:shimmer/shimmer.dart';
 
 // HomePage is now a StatefulWidget to manage state for infinite scrolling.
@@ -21,12 +21,12 @@ class _HomePageState extends State<HomePage> {
   bool _isLoading = false;
   bool _hasMore = true;
   int _currentPage = 0;
-  final int _pageSize = 10; // Number of products to fetch per page
+  final int _pageSize = 10;
 
   @override
   void initState() {
     super.initState();
-    loadAllProducts(); // Initial product load
+    loadAllProducts();
 
     // Add a listener to the scroll controller to detect when the user reaches the end.
     _scrollController.addListener(() {
@@ -42,14 +42,14 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _scrollController
-        .dispose(); // Dispose the controller to prevent memory leaks
+        .dispose();
     super.dispose();
   }
 
   /// Loads products paginated.
   Future<void> loadAllProducts() async {
     if (_isLoading || !_hasMore)
-      return; // Don't load if already loading or no more products
+      return;
 
     setState(() {
       _isLoading = true;
@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage> {
 
       setState(() {
         if (newProducts.length < _pageSize) {
-          _hasMore = false; // No more products to load
+          _hasMore = false;
         }
         _products.addAll(newProducts);
         _currentPage++;
@@ -73,9 +73,7 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        // Optionally, show a snackbar or an error message
       });
-      // Log or handle the error appropriately
       print("Error loading products: $e");
     }
   }
@@ -85,7 +83,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
 
-      /// ==== AppBar ====/
+      // ==== AppBar ====
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -128,7 +126,7 @@ class _HomePageState extends State<HomePage> {
                           minHeight: 12,
                         ),
                         child: const Text(
-                          '8', // This should be dynamic based on cart state
+                          '8',
                           style: TextStyle(color: Colors.white, fontSize: 8),
                           textAlign: TextAlign.center,
                         ),
@@ -145,7 +143,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
 
-      /// ==== Drawer ====/
+      // ==== Drawer ====
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -220,18 +218,18 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
 
-      /// ==== Body ====/
+      // ==== Body ====
       body: SingleChildScrollView(
-        controller: _scrollController, // Attach the scroll controller
+        controller: _scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Promo Carousel
+            // Promo Carousel
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: FutureBuilder<List<String>>(
                 future: _productService
-                    .fetchPromotionImages(), // Fetch images from the service
+                    .fetchPromotionImages(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Shimmer.fromColors(
@@ -252,11 +250,11 @@ class _HomePageState extends State<HomePage> {
                       child: Text(
                         'Error loading promo images: ${snapshot.error}',
                       ),
-                    ); // Show an error message
+                    );
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Center(
                       child: Text('No promo images found.'),
-                    ); // Show a message if no images are available
+                    );
                   } else {
                     final promoImages = snapshot.data!;
                     return CarouselSlider(
@@ -282,7 +280,7 @@ class _HomePageState extends State<HomePage> {
                             errorBuilder: (context, error, stackTrace) {
                               return const Center(
                                 child: Icon(Icons.error, color: Colors.red),
-                              ); // Show error icon
+                              );
                             },
                           ),
                         );
@@ -293,7 +291,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            /// Featured Products
+            // Featured Products
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: Text(
@@ -308,7 +306,7 @@ class _HomePageState extends State<HomePage> {
                   : GridView.builder(
                       shrinkWrap: true,
                       physics:
-                          const NeverScrollableScrollPhysics(), // GridView should not scroll independently
+                          const NeverScrollableScrollPhysics(),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
@@ -336,7 +334,7 @@ class _HomePageState extends State<HomePage> {
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Center(
-                  child: Text("You\'ve reached the end of the list."),
+                  child: Text("You've reached the end of the list."),
                 ),
               ),
 
@@ -345,7 +343,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
 
-      /// ==== Floating Button (Search) ====
+      // ==== Floating Button (Search) ====
       floatingActionButton: SizedBox(
         width: 150,
         height: 150,
@@ -386,7 +384,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-/// ==== Product Card ====/
+// ==== Product Card ====
 class ProductCard extends StatelessWidget {
   final Product product;
 
