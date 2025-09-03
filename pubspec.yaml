@@ -44,6 +44,7 @@ dependencies:
   http: ^1.2.1
   skeletons: ^0.0.3
   shimmer: ^3.0.0
+  firebase_messaging: ^15.2.10
 
 dev_dependencies:
   flutter_test:
