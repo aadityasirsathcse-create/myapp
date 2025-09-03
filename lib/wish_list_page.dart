@@ -93,7 +93,7 @@ class WishlistPage extends StatelessWidget {
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
       child: ListView.builder(
-        itemCount: 5, // Display 5 skeleton items
+        itemCount: 6, // Display 5 skeleton items
         itemBuilder: (context, index) {
           return ListTile(
             leading: Container(
