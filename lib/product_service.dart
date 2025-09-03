@@ -81,27 +81,12 @@ class ProductService {
   List<String>? _cachedCategories;
   List<String>? _cachedBrands;
 
-  /// ✅ Add Product (dummyjson + Firestore)
-  Future<Product> addProduct(Product product) async {
-    // First send to dummyjson (so your old flow works)
-    final response = await http.post(
-      Uri.parse('$baseUrl/add'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(product.toMap()),
-    );
 
-    if (response.statusCode == 201 || response.statusCode == 200) {
-      final addedProduct = Product.fromJson(json.decode(response.body));
-
-      // ✅ Also save into Firestore
-      await _firestore
-    .collection("products")
-    .add(addedProduct.toMap()); // auto-generated unique ID
-
-
-      return addedProduct;
-    } else {
-      throw Exception('Failed to add product: ${response.body}');
+   Future<void> addProduct(Product product) async {
+    try {
+      await _firestore.collection("products").add(product.toMap());
+    } catch (e) {
+      throw Exception("❌ Failed to add product: $e");
     }
   }
 
