@@ -66,7 +66,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-    final subtotal = product.price * product.discountPercentage/100;
+    final subtotal = product.price * product.discountPercentage / 100;
     final total = product.price - subtotal;
 
     return Scaffold(
@@ -238,8 +238,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
             const SizedBox(width: 16),
-            Expanded(child: _buildBuyNowButton(isInCart, quantity: quantity)),          
-            ],
+            Expanded(
+              child: _buildBuyNowButton(
+                isInCart,
+                quantity: quantity == 0 ? quantity + 1 : quantity,
+              ),
+            ),
+          ],
         );
       },
     );
@@ -346,7 +351,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             if (!isInCart) {
               CartService.instance.addToCart(widget.product);
             }
-            context.push('/checkout', extra: {'product': widget.product, 'quantity': quantity});
+            context.push(
+              '/checkout',
+              extra: {'product': widget.product, 'quantity': quantity},
+            );
           },
           child: const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
