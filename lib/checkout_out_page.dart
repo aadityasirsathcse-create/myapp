@@ -6,18 +6,21 @@ import 'package:go_router/go_router.dart';
 class CheckoutPage extends StatelessWidget {
   final double price;
   final int quantity;
+  final double discountPercentage;
 
   const CheckoutPage({
     super.key,
     required this.price,
     this.quantity = 1,
+    required this.discountPercentage,
   });
 
   @override
   Widget build(BuildContext context) {
     final subtotal = price * quantity;
+    final semitotal =  subtotal*discountPercentage/100;
     final shippingFee = 3.00 * quantity;
-    final total = subtotal + shippingFee;
+    final total = subtotal - semitotal + shippingFee;
     final now = DateTime.now();
     final formatter = DateFormat('d MMM y, HH:mm');
     final formattedDate = formatter.format(now);
@@ -42,8 +45,9 @@ class CheckoutPage extends StatelessWidget {
             const SizedBox(height: 8),
             Text('$formattedDate • Credit / Debit Card'),
             const SizedBox(height: 16),
-            _buildPriceRow('Subtotal', subtotal),
+            _buildPriceRow('Subtotal',  subtotal),
             _buildPriceRow('Shipping Fee', shippingFee),
+            _buildPriceRow('Discount', semitotal),
             const Divider(),
             _buildPriceRow('Total', total, isTotal: true),
             const SizedBox(height: 32),

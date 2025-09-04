@@ -66,6 +66,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    final subtotal = product.price * product.discountPercentage/100;
+    final total = product.price - subtotal;
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 245, 247, 247),
@@ -147,6 +149,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           children: [
                             Text(
                               "\$${product.price.toStringAsFixed(2)}",
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Text(
+                              "\$${total.toStringAsFixed(2)}",
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,

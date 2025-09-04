@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
+import 'package:myapp/add_product_page.dart';
 import 'package:myapp/cart_page.dart';
 import 'package:myapp/checkout_out_page.dart';
 import 'package:myapp/home_page.dart';
@@ -125,6 +126,7 @@ final _router = GoRouter(
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     GoRoute(path: '/signup', builder: (context, state) => const SignUpPage()),
     GoRoute(path: '/home', builder: (context, state) => const HomePage()),
+    GoRoute(path: '/addproduct', builder: (context, state) => const AddProductPage()),
     GoRoute(
       path: '/productDetail',
       builder: (context, state) =>
@@ -139,7 +141,7 @@ final _router = GoRouter(
         final extra = state.extra as Map<String, dynamic>;
         final product = extra['product'] as Product;
         final quantity = extra['quantity'] as int;
-        return CheckoutPage(price: product.price, quantity: quantity,);
+        return CheckoutPage(price: product.price, quantity: quantity, discountPercentage: product.discountPercentage,);
       }
     ),
     GoRoute(path: '/cart', builder: (context, state) => const CartPage()),
