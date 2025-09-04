@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:myapp/address_page.dart';
 import 'package:myapp/cart_service.dart';
+import 'package:myapp/notification_service.dart';
 import 'package:myapp/credit_card_page.dart';
 
 class ShippingPaymentPage extends StatefulWidget {
@@ -22,6 +23,7 @@ class ShippingPaymentPage extends StatefulWidget {
 class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
   final LocalAuthentication _localAuth = LocalAuthentication();
   final CartService _cartService = CartService.instance;
+    final NotificationService _notificationService = NotificationService();
   late Address _selectedShippingAddress;
   late Address _selectedBillingAddress;
   int _selectedPaymentIndex = 0;
@@ -70,6 +72,8 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
       );
       if (authenticated) {
         await _cartService.clearCart();
+                await _notificationService.showPaymentSuccessfulNotification();
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Payment Successful!')),
         );

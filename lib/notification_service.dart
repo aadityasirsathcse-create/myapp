@@ -64,4 +64,24 @@ class NotificationService {
       payload: productId,
     );
   }
+    Future<void> showPaymentSuccessfulNotification() async {
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+    'your_channel_id',
+    'your_channel_name',
+    channelDescription: 'your_channel_description',
+    importance: Importance.max,
+    priority: Priority.high,
+    showWhen: false,
+  );
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+  await _flutterLocalNotificationsPlugin.show(
+    0,
+    'Payment Successful',
+    'Your payment was successful and your order is confirmed.',
+    platformChannelSpecifics,
+  );
 }
+}
+

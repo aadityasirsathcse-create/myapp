@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:myapp/add_product_page.dart';
 import 'package:myapp/address_page.dart';
 import 'package:myapp/cart_page.dart';
-import 'package:myapp/checkout_out_page.dart';
+import 'package:myapp/check_out_page.dart';
 import 'package:myapp/home_page.dart';
 import 'package:myapp/notification_service.dart';
 import 'package:myapp/onboarding_page.dart';
