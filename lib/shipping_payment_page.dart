@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:myapp/address_page.dart';
+import 'package:myapp/credit_card_page.dart';
 
 class ShippingPaymentPage extends StatefulWidget {
   final Address shippingAddress;
@@ -21,7 +22,10 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
   final LocalAuthentication _localAuth = LocalAuthentication();
   late Address _selectedShippingAddress;
   late Address _selectedBillingAddress;
-  int _selectedPayment = 1;
+  int _selectedPaymentIndex = 0;
+  final List<CreditCard> _cards = [
+    CreditCard(cardNumber: '**** **** **** 0309', cardHolderName: 'John Doe', expiryDate: '12/25', cvv: '123', cardType: 'VISA'),
+  ];
 
   @override
   void initState() {
@@ -42,6 +46,20 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
       onAddressChanged(newAddress);
     }
   }
+
+  void _navigateAndEditCard(BuildContext context, CreditCard? card, Function(CreditCard) onCardChanged) async {
+    final newCard = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreditCardPage(card: card),
+      ),
+    );
+
+    if (newCard != null) {
+      onCardChanged(newCard);
+    }
+  }
+
 
   Future<void> _authenticate() async {
     try {
@@ -100,12 +118,24 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
               _selectedBillingAddress,
             ),
             const SizedBox(height: 32),
-            _buildSectionHeader('Payment Method', () {}),
-            _buildPaymentCard('**** **** **** 0309', 0, isVisa: true),
-            const SizedBox(height: 16),
-            _buildPaymentCard('**** **** **** 0633', 1, isVisa: true),
-            const SizedBox(height: 16),
-            _buildPaymentCard('**** **** **** 0608', 2, isVisa: true),
+            _buildSectionHeader('Payment Method', () {
+              _navigateAndEditCard(context, null, (newCard) {
+                setState(() {
+                  _cards.add(newCard);
+                });
+              });
+            }),
+            ..._cards.asMap().entries.map((entry) {
+            int index = entry.key;
+            CreditCard card = entry.value;
+            return _buildPaymentCard(card, index, () {
+              _navigateAndEditCard(context, card, (newCard) {
+                setState(() {
+                  _cards[index] = newCard;
+                });
+              });
+            });
+          }).toList(),
             const Spacer(),
             Center(
               child: Column(
@@ -139,7 +169,7 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
         ),
         TextButton(
           onPressed: onEdit,
-          child: const Text('Edit'),
+          child: Text(title == 'Payment Method' ? 'Add Card' : 'Edit'),
         ),
       ],
     );
@@ -179,44 +209,52 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
     );
   }
 
-  Widget _buildPaymentCard(String cardNumber, int index, {bool isVisa = false}) {
-    final isSelected = _selectedPayment == index;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedPayment = index),
-      child: Card(
-        elevation: isSelected ? 4 : 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(
-            color: isSelected ? Colors.blue : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  if (isVisa)
-                    const Text(
-                      'VISA',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  const SizedBox(width: 16),
-                  Text(cardNumber),
-                ],
-              ),
-              if (isSelected)
-                const Icon(Icons.check, color: Colors.blue),
-            ],
-          ),
+  Widget _buildPaymentCard(CreditCard card, int index, VoidCallback onEdit) {
+  final isSelected = _selectedPaymentIndex == index;
+  return GestureDetector(
+    onTap: () => setState(() => _selectedPaymentIndex = index),
+    child: Card(
+      elevation: isSelected ? 4 : 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: isSelected ? Colors.blue : Colors.grey.shade300,
+          width: isSelected ? 2 : 1,
         ),
       ),
-    );
-  }
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text(
+                  card.cardType,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text('**** **** **** ${card.cardNumber.substring(card.cardNumber.length - 4)}'),
+              ],
+            ),
+            Row(
+              children: [
+                if (isSelected)
+                  const Icon(Icons.check, color: Colors.blue),
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: onEdit,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 }
