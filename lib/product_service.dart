@@ -123,6 +123,8 @@ class ProductService {
     // Concatenate both lists
     final allProducts = [...apiProducts, ...firebaseProducts];
 
+      allProducts.shuffle();
+
     return allProducts;
   } catch (e) {
     throw Exception("Failed to load all products: $e");
@@ -161,14 +163,15 @@ class ProductService {
     }
   }
 
-  Future<List<String>> fetchPromotionImages() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return List.generate(
-      4,
-      (_) =>
-          "https://picsum.photos/800/600?grayscale&random=${Random().nextInt(100)}",
-    );
-  }
+Future<List<String>> fetchPromotionImages() async {
+  await Future.delayed(const Duration(milliseconds: 300));
+  return [
+    "https://rukminim2.flixcart.com/fk-p-flap/2020/340/image/705dfcfcdffd2671.jpg?q=60",
+    "https://rukminim2.flixcart.com/fk-p-flap/2020/340/image/d6e539257420c71c.jpeg?q=60",
+    "https://rukminim2.flixcart.com/fk-p-flap/2020/340/image/076c4f2ee87225d7.jpg?q=60",
+  ];
+}
+
 
   Future<List<String>> fetchCategories({bool forceRefresh = false}) async {
     if (_cachedCategories != null && !forceRefresh) {
