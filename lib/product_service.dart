@@ -106,6 +106,26 @@ class ProductService {
     }
   }
 
+Future<Product?> getProductById(String id) async {
+    try {
+      // Try fetching from the API first
+      final response = await http.get(Uri.parse('$baseUrl/$id'));
+      if (response.statusCode == 200) {
+        return Product.fromJson(json.decode(response.body));
+      }
+    } catch (e) {
+      // If API fails, try Firestore
+      try {
+        final doc = await _firestore.collection('products').doc(id).get();
+        if (doc.exists) {
+          return Product.fromMap(doc.data()!);
+        }
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
   // Load Firestore products (your own db)
   Future<List<Product>> loadFirebaseProducts() async {
     final snapshot = await _firestore.collection("products").get();

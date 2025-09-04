@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myapp/notification_service.dart';
 import 'product_service.dart';
 
 class CartService {
@@ -8,6 +9,7 @@ class CartService {
 
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
+    final NotificationService _notificationService = NotificationService();
 
   String? get _userId => _auth.currentUser?.uid;
 
@@ -25,6 +27,7 @@ class CartService {
         .collection('cart')
         .doc(product.id.toString())
         .set(cartItemData);
+    await _notificationService.showProductAddedNotification(product.title, product.id.toString());
   }
 
   /// Removes a product from the cart.

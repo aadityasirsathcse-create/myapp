@@ -9,6 +9,7 @@ import 'package:myapp/address_page.dart';
 import 'package:myapp/cart_page.dart';
 import 'package:myapp/checkout_out_page.dart';
 import 'package:myapp/home_page.dart';
+import 'package:myapp/notification_service.dart';
 import 'package:myapp/onboarding_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:myapp/product_service.dart';
@@ -20,6 +21,8 @@ import 'package:myapp/login_page.dart';
 import 'package:myapp/wish_list_page.dart';
 import 'firebase_options.dart';
 import 'package:myapp/product_detail_page.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 // Must be a top-level function
 @pragma('vm:entry-point')
@@ -46,7 +49,8 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 
 Future<void> initNotifications() async {
   final messaging = FirebaseMessaging.instance;
-
+    final notificationService = NotificationService();
+  await notificationService.init();
   // Request permission
   final settings = await messaging.requestPermission(
     alert: true,
@@ -69,9 +73,21 @@ Future<void> initNotifications() async {
   // Initialize the plugin
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('@mipmap/ic_launcher');
-  const InitializationSettings initializationSettings =
-      InitializationSettings(android: initializationSettingsAndroid);
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  final InitializationSettings initializationSettings =
+      const InitializationSettings(android: initializationSettingsAndroid);
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
+    final String? payload = notificationResponse.payload;
+    if (payload != null) {
+      log('notification payload: $payload');
+      // Navigate to product page
+      final productService = ProductService();
+      final product = await productService.getProductById(payload);
+      if (product != null) {
+        navigatorKey.currentContext?.go('/productDetail', extra: product);
+      }
+    }
+  });
 
   // Get the token
   final fcmToken = await messaging.getToken();
@@ -102,27 +118,44 @@ Future<void> initNotifications() async {
             icon: android.smallIcon,
           ),
         ),
+                payload: message.data['productId'],
+
       );
     }
   });
 
    // Handle notification tap when app is in background
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+ FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
     log('A new onMessageOpenedApp event was published!');
-    // You can navigate to a specific page here based on the message data
+    final String? productId = message.data['productId'];
+    if (productId != null) {
+       final productService = ProductService();
+      final product = await productService.getProductById(productId);
+      if (product != null) {
+        navigatorKey.currentContext?.go('/productDetail', extra: product);
+      }
+    }
   });
 
   // Handle notification tap when app is terminated
-  messaging.getInitialMessage().then((RemoteMessage? message) {
+  messaging.getInitialMessage().then((RemoteMessage? message) async {
     if (message != null) {
        log('App was opened from a terminated state by a notification!');
-      // You can navigate to a specific page here based on the message data
+       final String? productId = message.data['productId'];
+        if (productId != null) {
+          final productService = ProductService();
+          final product = await productService.getProductById(productId);
+          if (product != null) {
+            navigatorKey.currentContext?.go('/productDetail', extra: product);
+          }
+        }
     }
   });
 }
 
 
 final _router = GoRouter(
+    navigatorKey: navigatorKey, 
   routes: [
     GoRoute(path: '/', builder: (context, state) => const OnboardingPage()),
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
