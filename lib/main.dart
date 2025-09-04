@@ -1,9 +1,11 @@
+
 import 'dart:developer';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:myapp/add_product_page.dart';
+import 'package:myapp/address_page.dart';
 import 'package:myapp/cart_page.dart';
 import 'package:myapp/checkout_out_page.dart';
 import 'package:myapp/home_page.dart';
@@ -134,7 +136,12 @@ final _router = GoRouter(
     ),
         GoRoute(
         path: '/shippingPayment',
-        builder: (context, state) => const ShippingPaymentPage()),
+        builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        final shippingAddress = extra['shippingAddress'] as Address;
+        final billingAddress = extra['billingAddress'] as Address;
+        return ShippingPaymentPage(shippingAddress: shippingAddress, billingAddress: billingAddress,);
+        }),
     GoRoute(
       path: '/checkout',
       builder: (context, state) {

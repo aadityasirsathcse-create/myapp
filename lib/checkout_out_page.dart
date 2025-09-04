@@ -2,8 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:myapp/address_page.dart';
 
-class CheckoutPage extends StatelessWidget {
+class CheckoutPage extends StatefulWidget {
   final double price;
   final int quantity;
   final double discountPercentage;
@@ -16,10 +17,31 @@ class CheckoutPage extends StatelessWidget {
   });
 
   @override
+  _CheckoutPageState createState() => _CheckoutPageState();
+}
+
+class _CheckoutPageState extends State<CheckoutPage> {
+  Address _shippingAddress = Address(street: '22 Baker Street', city: 'London', state: 'MG91', zipCode: '9AF');
+  Address _billingAddress = Address(street: '22 Baker Street', city: 'London', state: 'MG91', zipCode: '9AF');
+
+  void _navigateAndEditAddress(BuildContext context, Address currentAddress, Function(Address) onAddressChanged) async {
+    final newAddress = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddressPage(address: currentAddress),
+      ),
+    );
+
+    if (newAddress != null) {
+      onAddressChanged(newAddress);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final subtotal = price * quantity;
-    final semitotal =  subtotal*discountPercentage/100;
-    final shippingFee = 3.00 * quantity;
+    final subtotal = widget.price * widget.quantity;
+    final semitotal = subtotal * widget.discountPercentage / 100;
+    final shippingFee = 3.00 * widget.quantity;
     final total = subtotal - semitotal + shippingFee;
     final now = DateTime.now();
     final formatter = DateFormat('d MMM y, HH:mm');
@@ -45,7 +67,7 @@ class CheckoutPage extends StatelessWidget {
             const SizedBox(height: 8),
             Text('$formattedDate • Credit / Debit Card'),
             const SizedBox(height: 16),
-            _buildPriceRow('Subtotal',  subtotal),
+            _buildPriceRow('Subtotal', subtotal),
             _buildPriceRow('Shipping Fee', shippingFee),
             _buildPriceRow('Discount', semitotal),
             const Divider(),
@@ -56,20 +78,37 @@ class CheckoutPage extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            _buildAddressCard('22 Baker Street\nLondon MG91 9AF'),
+            _buildAddressCard(
+              '${_shippingAddress.street}\n${_shippingAddress.city} ${_shippingAddress.state} ${_shippingAddress.zipCode}',
+              () => _navigateAndEditAddress(context, _shippingAddress, (newAddress) {
+                setState(() {
+                  _shippingAddress = newAddress;
+                });
+              }),
+            ),
             const SizedBox(height: 32),
             const Text(
               'Billing Address',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            _buildAddressCard('22 Baker Street\nLondon MG91 9AF'),
+            _buildAddressCard(
+              '${_billingAddress.street}\n${_billingAddress.city} ${_billingAddress.state} ${_billingAddress.zipCode}',
+              () => _navigateAndEditAddress(context, _billingAddress, (newAddress) {
+                setState(() {
+                  _billingAddress = newAddress;
+                });
+              }),
+            ),
             const Spacer(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  context.push('/shippingPayment');
+                  context.push('/shippingPayment', extra: {
+                    'shippingAddress': _shippingAddress,
+                    'billingAddress': _billingAddress,
+                  });
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 13),
@@ -112,7 +151,7 @@ class CheckoutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAddressCard(String address) {
+  Widget _buildAddressCard(String address, VoidCallback onChange) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -121,7 +160,7 @@ class CheckoutPage extends StatelessWidget {
           children: [
             Text(address),
             TextButton(
-              onPressed: () {},
+              onPressed: onChange,
               child: const Text('Change'),
             ),
           ],

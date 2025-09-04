@@ -1,8 +1,17 @@
+
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:myapp/address_page.dart';
 
 class ShippingPaymentPage extends StatefulWidget {
-  const ShippingPaymentPage({super.key});
+  final Address shippingAddress;
+  final Address billingAddress;
+
+  const ShippingPaymentPage({
+    super.key,
+    required this.shippingAddress,
+    required this.billingAddress,
+  });
 
   @override
   State<ShippingPaymentPage> createState() => _ShippingPaymentPageState();
@@ -10,8 +19,29 @@ class ShippingPaymentPage extends StatefulWidget {
 
 class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
   final LocalAuthentication _localAuth = LocalAuthentication();
-  int _selectedAddress = 1;
+  late Address _selectedShippingAddress;
+  late Address _selectedBillingAddress;
   int _selectedPayment = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedShippingAddress = widget.shippingAddress;
+    _selectedBillingAddress = widget.billingAddress;
+  }
+
+  void _navigateAndEditAddress(BuildContext context, Address currentAddress, Function(Address) onAddressChanged) async {
+    final newAddress = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddressPage(address: currentAddress),
+      ),
+    );
+
+    if (newAddress != null) {
+      onAddressChanged(newAddress);
+    }
+  }
 
   Future<void> _authenticate() async {
     try {
@@ -46,18 +76,31 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionHeader('Shipping Address', 'Edit'),
+            _buildSectionHeader('Shipping Address', () {
+              _navigateAndEditAddress(context, _selectedShippingAddress, (newAddress) {
+                setState(() {
+                  _selectedShippingAddress = newAddress;
+                });
+              });
+            }),
             _buildAddressCard(
-              'Waterway Residences\nLondon MG91 9AF',
-              0,
+              '${_selectedShippingAddress.street}\n${_selectedShippingAddress.city} ${_selectedShippingAddress.state} ${_selectedShippingAddress.zipCode}',
+              _selectedShippingAddress,
             ),
             const SizedBox(height: 16),
+            _buildSectionHeader('Billing Address', () {
+              _navigateAndEditAddress(context, _selectedBillingAddress, (newAddress) {
+                setState(() {
+                  _selectedBillingAddress = newAddress;
+                });
+              });
+            }),
             _buildAddressCard(
-              '22 Baker Street\nLondon MG91 9AF',
-              1,
+              '${_selectedBillingAddress.street}\n${_selectedBillingAddress.city} ${_selectedBillingAddress.state} ${_selectedBillingAddress.zipCode}',
+              _selectedBillingAddress,
             ),
             const SizedBox(height: 32),
-            _buildSectionHeader('Payment Method', 'Add Card'),
+            _buildSectionHeader('Payment Method', () {}),
             _buildPaymentCard('**** **** **** 0309', 0, isVisa: true),
             const SizedBox(height: 16),
             _buildPaymentCard('**** **** **** 0633', 1, isVisa: true),
@@ -86,7 +129,7 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
     );
   }
 
-  Widget _buildSectionHeader(String title, String actionText) {
+  Widget _buildSectionHeader(String title, VoidCallback onEdit) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -95,17 +138,23 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         TextButton(
-          onPressed: () {},
-          child: Text(actionText),
+          onPressed: onEdit,
+          child: const Text('Edit'),
         ),
       ],
     );
   }
 
-  Widget _buildAddressCard(String address, int index) {
-    final isSelected = _selectedAddress == index;
+  Widget _buildAddressCard(String address, Address currentAddress) {
+    final isSelected = _selectedShippingAddress == currentAddress || _selectedBillingAddress == currentAddress;
     return GestureDetector(
-      onTap: () => setState(() => _selectedAddress = index),
+      onTap: () => setState(() {
+        if (currentAddress == _selectedShippingAddress) {
+          // Handle shipping address selection
+        } else {
+          // Handle billing address selection
+        }
+      }),
       child: Card(
         elevation: isSelected ? 4 : 1,
         shape: RoundedRectangleBorder(
