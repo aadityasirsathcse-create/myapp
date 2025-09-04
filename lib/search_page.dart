@@ -4,6 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import 'product_service.dart';
 
 enum SearchState { initial, searching, results }
+
 enum SortOption { priceLowHigh, priceHighLow, ratingHighLow, discountHighLow }
 
 class SearchPage extends StatefulWidget {
@@ -69,9 +70,11 @@ class _SearchPageState extends State<SearchPage> {
       _filteredProducts = _allProducts.where((p) {
         final matchesQuery =
             query.isEmpty || p.title.toLowerCase().contains(lowerQuery);
-        final matchesCategory = _selectedCategory == "All" ||
+        final matchesCategory =
+            _selectedCategory == "All" ||
             p.category.toLowerCase() == _selectedCategory.toLowerCase();
-        final matchesBrand = _selectedBrand == "All" ||
+        final matchesBrand =
+            _selectedBrand == "All" ||
             p.brand.toLowerCase() == _selectedBrand.toLowerCase();
         final matchesPrice = p.price >= _minPrice && p.price <= _maxPrice;
         final matchesRating = p.rating >= _minRating;
@@ -96,8 +99,9 @@ class _SearchPageState extends State<SearchPage> {
           _filteredProducts.sort((a, b) => b.rating.compareTo(a.rating));
           break;
         case SortOption.discountHighLow:
-          _filteredProducts
-              .sort((a, b) => b.discountPercentage.compareTo(a.discountPercentage));
+          _filteredProducts.sort(
+            (a, b) => b.discountPercentage.compareTo(a.discountPercentage),
+          );
           break;
       }
     });
@@ -318,12 +322,14 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _buildInitialState() {
     return CustomScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: [
         SliverToBoxAdapter(
           child: SizedBox(
             height: 50,
             child: ListView(
               scrollDirection: Axis.horizontal,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               children: categories.map((cat) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -409,11 +415,14 @@ class _SearchPageState extends State<SearchPage> {
     return _filteredProducts.isEmpty
         ? const Center(child: Text('No products found'))
         : CustomScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -422,17 +431,21 @@ class _SearchPageState extends State<SearchPage> {
                         underline: const SizedBox(),
                         items: const [
                           DropdownMenuItem(
-                              value: SortOption.priceLowHigh,
-                              child: Text("Price: Low → High")),
+                            value: SortOption.priceLowHigh,
+                            child: Text("Price: Low → High"),
+                          ),
                           DropdownMenuItem(
-                              value: SortOption.priceHighLow,
-                              child: Text("Price: High → Low")),
+                            value: SortOption.priceHighLow,
+                            child: Text("Price: High → Low"),
+                          ),
                           DropdownMenuItem(
-                              value: SortOption.ratingHighLow,
-                              child: Text("Rating")),
+                            value: SortOption.ratingHighLow,
+                            child: Text("Rating"),
+                          ),
                           DropdownMenuItem(
-                              value: SortOption.discountHighLow,
-                              child: Text("Discount")),
+                            value: SortOption.discountHighLow,
+                            child: Text("Discount"),
+                          ),
                         ],
                         onChanged: (val) {
                           if (val != null) {
@@ -519,13 +532,37 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  "\$${product.price.toStringAsFixed(2)}",
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      "\$${product.price.toStringAsFixed(2)}",
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    if (product.discountPercentage > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          "${product.discountPercentage.toStringAsFixed(0)}% OFF",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -571,16 +608,13 @@ class _SearchPageState extends State<SearchPage> {
         itemBuilder: (context, index) {
           return Card(
             elevation: 2,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Container(
-                    color: Colors.white,
-                  ),
-                ),
+                Expanded(child: Container(color: Colors.white)),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
@@ -592,17 +626,9 @@ class _SearchPageState extends State<SearchPage> {
                         color: Colors.white,
                       ),
                       const SizedBox(height: 4.0),
-                      Container(
-                        width: 50.0,
-                        height: 14.0,
-                        color: Colors.white,
-                      ),
+                      Container(width: 50.0, height: 14.0, color: Colors.white),
                       const SizedBox(height: 4.0),
-                      Container(
-                        width: 80.0,
-                        height: 12.0,
-                        color: Colors.white,
-                      ),
+                      Container(width: 80.0, height: 12.0, color: Colors.white),
                     ],
                   ),
                 ),

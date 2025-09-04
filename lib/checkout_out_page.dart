@@ -141,12 +141,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 13),
-                    backgroundColor: Colors.transparent, // 👈 transparent bg
-                    shadowColor: Colors.transparent, // 👈 remove shadow
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
                         12,
-                      ), // match container radius
+                      ),
                     ),
                   ),
                   child: const Text(
