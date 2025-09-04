@@ -40,6 +40,21 @@ class CartService {
         .doc(product.id.toString())
         .delete();
   }
+  
+  /// Clears all products from the cart.
+  Future<void> clearCart() async {
+    if (_userId == null) return;
+    final cartCollection = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('cart');
+
+    final cartSnapshot = await cartCollection.get();
+    for (final doc in cartSnapshot.docs) {
+      await doc.reference.delete();
+    }
+  }
+
 
   /// Updates the quantity of a specific item in the cart.
   Future<void> updateCartItemQuantity(int productId, int quantity) async {

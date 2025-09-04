@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:myapp/address_page.dart';
+import 'package:myapp/cart_service.dart';
 import 'package:myapp/credit_card_page.dart';
 
 class ShippingPaymentPage extends StatefulWidget {
@@ -20,6 +21,7 @@ class ShippingPaymentPage extends StatefulWidget {
 
 class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
   final LocalAuthentication _localAuth = LocalAuthentication();
+  final CartService _cartService = CartService.instance;
   late Address _selectedShippingAddress;
   late Address _selectedBillingAddress;
   int _selectedPaymentIndex = 0;
@@ -67,7 +69,7 @@ class _ShippingPaymentPageState extends State<ShippingPaymentPage> {
         localizedReason: 'Please authenticate to complete your purchase',
       );
       if (authenticated) {
-        // You can add logic here to proceed with the payment
+        await _cartService.clearCart();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Payment Successful!')),
         );
