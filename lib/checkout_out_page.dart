@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
@@ -21,10 +20,24 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  Address _shippingAddress = Address(street: '22 Baker Street', city: 'London', state: 'MG91', zipCode: '9AF');
-  Address _billingAddress = Address(street: '22 Baker Street', city: 'London', state: 'MG91', zipCode: '9AF');
+  Address _shippingAddress = Address(
+    street: '22 Baker Street',
+    city: 'London',
+    state: 'MG91',
+    zipCode: '9AF',
+  );
+  Address _billingAddress = Address(
+    street: '22 Baker Street',
+    city: 'London',
+    state: 'MG91',
+    zipCode: '9AF',
+  );
 
-  void _navigateAndEditAddress(BuildContext context, Address currentAddress, Function(Address) onAddressChanged) async {
+  void _navigateAndEditAddress(
+    BuildContext context,
+    Address currentAddress,
+    Function(Address) onAddressChanged,
+  ) async {
     final newAddress = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -80,7 +93,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
             const SizedBox(height: 8),
             _buildAddressCard(
               '${_shippingAddress.street}\n${_shippingAddress.city} ${_shippingAddress.state} ${_shippingAddress.zipCode}',
-              () => _navigateAndEditAddress(context, _shippingAddress, (newAddress) {
+              () => _navigateAndEditAddress(context, _shippingAddress, (
+                newAddress,
+              ) {
                 setState(() {
                   _shippingAddress = newAddress;
                 });
@@ -94,7 +109,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
             const SizedBox(height: 8),
             _buildAddressCard(
               '${_billingAddress.street}\n${_billingAddress.city} ${_billingAddress.state} ${_billingAddress.zipCode}',
-              () => _navigateAndEditAddress(context, _billingAddress, (newAddress) {
+              () => _navigateAndEditAddress(context, _billingAddress, (
+                newAddress,
+              ) {
                 setState(() {
                   _billingAddress = newAddress;
                 });
@@ -103,20 +120,43 @@ class _CheckoutPageState extends State<CheckoutPage> {
             const Spacer(),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  context.push('/shippingPayment', extra: {
-                    'shippingAddress': _shippingAddress,
-                    'billingAddress': _billingAddress,
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF5B74FF), Color(0xFF2DE6AF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    context.push(
+                      '/shippingPayment',
+                      extra: {
+                        'shippingAddress': _shippingAddress,
+                        'billingAddress': _billingAddress,
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    backgroundColor: Colors.transparent, // 👈 transparent bg
+                    shadowColor: Colors.transparent, // 👈 remove shadow
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        12,
+                      ), // match container radius
+                    ),
+                  ),
+                  child: const Text(
+                    'Check Out',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                    ), // white text
                   ),
                 ),
-                child: const Text('Check Out', style: TextStyle(fontSize: 18)),
               ),
             ),
             const SizedBox(height: 33),
@@ -159,10 +199,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(address),
-            TextButton(
-              onPressed: onChange,
-              child: const Text('Change'),
-            ),
+            TextButton(onPressed: onChange, child: const Text('Change')),
           ],
         ),
       ),
